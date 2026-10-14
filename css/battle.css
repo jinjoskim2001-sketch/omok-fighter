@@ -1,0 +1,325 @@
+/* 돌주먹 — battle screen (SPEC §4): HUD 64 · square board · stage strip (88–200) · bottom bar 56,
+   overlays (round banners, K.O., round result, coin toss), hit-stop, flash and shake.
+   Only transform / opacity animate. The K.O. flash and shake are WAAPI animations (js/ui/battle.js)
+   and the hit-stop pauses the stage's own animations; the rules below are their fallbacks. */
+
+.scr--battle { padding: 0; background: var(--bg); }
+.bt__bg { position: absolute; inset: 0; background: var(--bg); }
+.bt__shake {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: calc(var(--sat) + 4px) calc(var(--sar) + 6px) calc(var(--sab) + 4px) calc(var(--sal) + 6px);
+  /* board side = min(screen width − 12, the height left after HUD/bar/min stage), ≤ 560 */
+  --bs: min(calc(var(--app-w) - 12px - var(--sal) - var(--sar)), calc(var(--vh) - var(--sat) - var(--sab) - 222px - var(--hud-top, 0px)), 560px);
+}
+/* a move timer: the HUD gets headroom for the MATCH POINT tag, which then sits on the panel's top
+   edge instead of over the timer bar */
+.bt--timer { --hud-top: 7px; }
+.bt__shake.shaking { animation: bt-shake var(--shake-ms, 320ms) linear both; }
+@keyframes bt-shake {
+  0%   { transform: translate(0, 0); }
+  8%   { transform: translate(calc(var(--amp) * 1), calc(var(--amp) * -.6)); }
+  17%  { transform: translate(calc(var(--amp) * -.88), calc(var(--amp) * .7)); }
+  26%  { transform: translate(calc(var(--amp) * .76), calc(var(--amp) * .5)); }
+  35%  { transform: translate(calc(var(--amp) * -.64), calc(var(--amp) * -.62)); }
+  44%  { transform: translate(calc(var(--amp) * .52), calc(var(--amp) * .4)); }
+  53%  { transform: translate(calc(var(--amp) * -.42), calc(var(--amp) * -.3)); }
+  62%  { transform: translate(calc(var(--amp) * .32), calc(var(--amp) * .3)); }
+  71%  { transform: translate(calc(var(--amp) * -.22), calc(var(--amp) * -.2)); }
+  80%  { transform: translate(calc(var(--amp) * .14), calc(var(--amp) * .1)); }
+  90%  { transform: translate(calc(var(--amp) * -.06), calc(var(--amp) * -.05)); }
+  100% { transform: translate(0, 0); }
+}
+/* hit-stop fallback (no getAnimations): js adds .hitstop to .bt__stage → css/fighters.css pauses the
+   fighters. Never a universal rule on the whole screen (≈600 elements restyled on the impact frame). */
+
+/* ---------- HUD ---------- */
+.hud {
+  flex: none; position: relative; z-index: 2;
+  height: 64px; margin-top: var(--hud-top, 0px);
+  display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); align-items: center; gap: 5px;
+}
+.hud__p {
+  --pc: var(--p1);
+  /* the turn glow: --pc at 55 %, written out (color-mix() is Safari 16.2+, and inside a declaration
+     with var() an unknown function voids the whole box-shadow on iOS 16.0/16.1) */
+  --pc-glow: rgba(255, 71, 87, .55);
+  position: relative; min-width: 0; height: 58px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 7px 0 0;
+  border: 3px solid var(--ink); border-radius: 15px;
+  background: var(--bg2);
+  box-shadow: 0 3px 0 var(--ink);
+  transform-origin: 30% 50%;
+  transition: transform .22s var(--ease-back), opacity .22s;
+}
+.hud__p--2 { --pc: var(--p2); --pc-glow: rgba(46, 155, 255, .55); flex-direction: row-reverse; padding: 0 0 0 7px; transform-origin: 70% 50%; }
+.hud__p.is-turn {
+  transform: scale(1.04);
+  box-shadow: 0 3px 0 var(--ink), 0 0 0 2.5px var(--pc), 0 0 16px 2px var(--pc-glow);
+}
+/* the waiting side: only its text dims; the portrait keeps its colours (a navy fighter on a dark
+   tile at 50 % disappears) and the MATCH POINT tag stays readable */
+.hud__info { transition: opacity .22s; }
+.hud__p.is-wait .hud__info { opacity: .5; }
+.hud__pt {
+  position: relative; flex: none; width: 52px; height: 52px; margin-left: 0;
+  border-radius: 12px 0 0 12px; overflow: hidden;
+  background: var(--ptbg, var(--bg3));     /* the fighter's own backdrop colour (hud.js) */
+}
+.hud__pt > .fig { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hud__p--1 .hud__pt { border-right: 3px solid var(--ink); }
+.hud__p--2 .hud__pt { border-radius: 0 12px 12px 0; border-left: 3px solid var(--ink); }
+.hud__info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hud__p--2 .hud__info { align-items: flex-end; }
+.hud__name { display: flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; }
+.hud__p--2 .hud__name { flex-direction: row-reverse; }
+.hud__name b { font: 17px/1 var(--font-display); color: var(--paper); font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
+.hud__tag { flex: none; font: 11px/1 var(--font-display); padding: 3px 4px 2px; border-radius: 5px; border: 2px solid var(--ink); background: var(--pc); color: #fff; letter-spacing: .02em; }
+.hud__stone { display: inline-flex; flex: none; }
+.hud__stone .stone { width: 15px; height: 15px; }
+.hud__pips { display: flex; gap: 3px; height: 12px; }
+.hud__p--2 .hud__pips { flex-direction: row-reverse; }
+.pip { display: block; width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--bg3); box-shadow: inset 0 0 0 1px rgba(255, 244, 222, .14); }
+.pip.is-on { background: var(--gold); box-shadow: inset -2px -2px 0 rgba(0, 0, 0, .18); }
+.pip.is-new { animation: pip-in .3s var(--ease-back) both; }
+@keyframes pip-in { 0% { transform: scale(.2); } 60% { transform: scale(1.5); } 100% { transform: scale(1); } }
+.hud__timer {
+  position: relative; width: 100%; max-width: 92px; height: 9px;
+  border: 2px solid var(--ink); border-radius: 5px; background: var(--ink); overflow: hidden;
+  opacity: .35;
+}
+.hud__timer.is-live { opacity: 1; }
+.hud__tfill { position: absolute; inset: 0; background: var(--lime); transform-origin: 0 50%; will-change: transform; }
+.hud__p--2 .hud__tfill { transform-origin: 100% 50%; }
+.hud__tticks { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(20% - 2px), rgba(42, 30, 47, .7) calc(20% - 2px) 20%); }
+.hud__timer.is-low .hud__tfill { background: var(--danger); }
+.hud__timer.is-crit { animation: blink .5s steps(1, end) infinite; }
+.hud.no-timer .hud__timer { display: none; }
+.hud__mp {
+  position: absolute; bottom: -9px; left: 58px; z-index: 2;
+  padding: 2px 5px 1px; border: 2px solid var(--ink); border-radius: 6px;
+  background: var(--gold); color: var(--ink);
+  font: 10px/1.1 var(--font-display); letter-spacing: .04em; white-space: nowrap;
+  display: none;
+}
+.hud__p--2 .hud__mp { left: auto; right: 58px; }
+.hud__p.is-mp .hud__mp { display: block; animation: mp-pulse 1.4s ease-in-out infinite; }
+/* timer on: the tag hangs from the panel's top edge (its lower part on the border), clear of the
+   name row and of the live timer bar under it */
+.hud:not(.no-timer) .hud__mp { bottom: auto; top: -14px; padding: 1px 5px 1px; font-size: 9.5px; }
+@keyframes mp-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.hud__think {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 2px 0 3px; background: rgba(23, 18, 31, .86);
+  font: 11px/1 var(--font-display); color: var(--lime); text-align: center;
+  display: none;
+}
+.hud__p.is-thinking .hud__think { display: block; animation: blink .9s steps(1, end) infinite; }
+.hud__round {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 50px; border: 3px solid var(--ink); border-radius: 12px; background: var(--paper); color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+.hud__round small { font: 9px/1 var(--font-display); letter-spacing: 0; white-space: nowrap; }
+.hud__round b { font: 24px/1 var(--font-display); font-weight: 400; }
+.hud__round.is-final { background: var(--gold); }
+.hud__round.is-final b { font-size: 18px; }
+
+/* ---------- board + stage ---------- */
+/* The board sits under the HUD and the stage below it always reaches the bottom bar, so the
+   fighters stand on the bar. The fighters are squares as tall as the stage allows and at most
+   0.46 of its width each (≤ 200; fighterSize in battle.js): side by side at 4 % from the edges
+   their boxes just meet. The stage's basis is the height at which they reach that width.
+   Short screens: the board is height-bound, the stage shrinks toward 88 and nothing changes.
+   Tall phones (the board is width-bound): the height left over after the board and that stage
+   is shared half and half between a lead above the board (::before) and the stage, instead of
+   all of it piling up between the board and the fighters. */
+.bt__mid {
+  flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px;
+  --fit: min(200px, calc((var(--app-w) - 12px - var(--sal) - var(--sar)) * .46));
+}
+.bt__mid::before { content: ''; flex: 1 1 0; max-height: 80px; }
+.bt__boardwrap { position: relative; flex: none; width: var(--bs); height: var(--bs); }
+.bt__board { position: absolute; inset: 0; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.bt__stage { position: relative; flex: 1 1 calc(var(--fit) * 1.03 + 4px); min-height: 88px; width: 100%; }
+.bt__floor {
+  position: absolute; left: -6px; right: -6px; bottom: 4px; height: 14px;
+  background: var(--ink);
+  /* the stage accent 70 % over ink, mixed in battle.js (no color-mix(): Safari 16.2+) */
+  border-top: 3px solid var(--accent-floor, var(--accent));
+}
+.bt__slot { position: absolute; bottom: 8px; display: flex; align-items: flex-end; }
+.bt__slot > .stage { flex: none; align-self: flex-end; }     /* a fighter is a fixed square: never stretched */
+.bt__slot--1 { left: 4%; }
+.bt__slot--2 { right: 4%; }
+
+/* ---------- bottom bar ---------- */
+.bt__bar { flex: none; height: 56px; display: flex; align-items: center; gap: 8px; position: relative; z-index: 2; }
+.bt__undo { flex: none; min-width: 108px; flex-direction: row; gap: 4px; font-size: 16px; padding: 4px 10px 5px 8px; }
+.bt__undo .btn__icon { width: 20px; height: 20px; }
+.bt__pause { flex: none; }
+.bt__turn {
+  flex: 1; min-width: 0; height: 44px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  border: 3px solid var(--ink); border-radius: 22px; background: var(--bg2);
+  box-shadow: 0 3px 0 var(--ink);
+  font: 16px/1 var(--font-display); color: var(--paper); white-space: nowrap;
+}
+.bt__turn.is-p1 { box-shadow: 0 3px 0 var(--ink), inset 0 0 0 2px var(--p1); }
+.bt__turn.is-p2 { box-shadow: 0 3px 0 var(--ink), inset 0 0 0 2px var(--p2); }
+.bt__who { font: 12px/1 var(--font-display); padding: 3px 5px 2px; border-radius: 6px; border: 2px solid var(--ink); background: var(--p1); color: #fff; }
+.bt__turn.is-p2 .bt__who { background: var(--p2); }
+.bt__turn .stone { width: 16px; height: 16px; }
+
+/* ---------- overlay layers ---------- */
+.bt__dim { position: absolute; inset: 0; z-index: 5; background: rgba(8, 5, 14, .3); opacity: 0; pointer-events: none; transition: opacity .14s; }
+.bt__dim.is-on { opacity: 1; }
+.bt__dim.is-deep { background: rgba(8, 5, 14, .62); }
+.bt__tap { position: absolute; inset: 0; z-index: 6; display: none; cursor: pointer; }
+.bt__tap.is-on { display: block; }
+.bt__ov { position: absolute; inset: 0; z-index: 7; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+.bt__flash { position: absolute; inset: 0; z-index: 9; background: #fff; opacity: 0; pointer-events: none; }
+.bt__flash.go { animation: bt-flash .2s linear both; }
+@keyframes bt-flash { 0% { opacity: .35; } 25% { opacity: .35; } 100% { opacity: 0; } }
+
+/* banners: ROUND n / FINAL ROUND / FIGHT! / K.O. / TIME OVER / DRAW / 기권승 */
+.ban { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+.ban.is-on { display: flex; }
+.ban[data-pos="top"] { justify-content: flex-start; padding-top: 9%; }
+.ban[data-pos="bottom"] { justify-content: flex-end; padding-bottom: 11%; }
+.ban__main {
+  font-family: var(--font-display); line-height: .95; white-space: nowrap;
+  font-size: min(19vw, 84px);
+  color: var(--paper);
+  -webkit-text-stroke: .15em var(--ink); paint-order: stroke fill;
+  text-shadow: 0 .06em 0 var(--ink), 0 .1em 0 var(--ink);
+  transform: rotate(-5deg);
+}
+.ban__sub {
+  padding: 6px 12px 7px; border: 3px solid var(--ink); border-radius: 12px;
+  background: var(--paper); color: var(--ink); box-shadow: 0 4px 0 var(--ink);
+  font: 18px/1 var(--font-display);
+}
+.ban__sub[hidden] { display: none; }
+.who { display: inline-block; padding: 2px 6px 1px; border-radius: 6px; border: 2px solid var(--ink); color: #fff; background: var(--p1); font-size: .85em; vertical-align: 1px; }
+.who--p2 { background: var(--p2); }
+.ban--round .ban__main { color: var(--paper); font-size: min(17vw, 74px); }
+.ban--final .ban__main { color: var(--gold); font-size: min(14vw, 64px); }
+.ban--fight .ban__main { color: var(--gold); font-size: min(22vw, 96px); }
+.ban--ko .ban__main { color: var(--gold); font-size: min(30vw, 128px); letter-spacing: -.02em; }
+/* '금수 함정!' rides on the K.O. lettering like a sticker, so the banner barely grows and stays
+   clear of the five (data-pos) */
+.ban--ko .ban__sub { position: relative; margin-top: -32px; transform: rotate(-4deg); font-size: 17px; }
+.ban--timeover .ban__main { color: var(--danger); font-size: min(15vw, 64px); }
+.ban--draw .ban__main { color: var(--mint); font-size: min(19vw, 84px); }
+.ban--resign .ban__main { color: var(--lime); font-size: min(19vw, 84px); }
+.ban.slam .ban__main { animation: ban-slam .2s var(--ease-slam) both; }
+.ban--ko.slam .ban__main { animation: ban-ko .14s var(--ease-slam) both; }
+.ban--fight.slam .ban__main { animation: ban-fight .5s var(--ease-slam) both; }
+.ban.slam .ban__sub, .ban.fade .ban__sub { animation: fade-in .2s ease-out both .1s; }
+.ban.fade .ban__main { animation: fade-in .2s ease-out both; }
+@keyframes ban-slam { from { opacity: 0; transform: rotate(-5deg) scale(3); } to { opacity: 1; transform: rotate(-5deg) scale(1); } }
+@keyframes ban-ko { from { opacity: .2; transform: rotate(-5deg) scale(2.6); } to { opacity: 1; transform: rotate(-5deg) scale(1); } }
+@keyframes ban-fight {
+  0% { opacity: 0; transform: rotate(-5deg) scale(2.4); }
+  30% { opacity: 1; transform: rotate(-5deg) scale(1); }
+  75% { opacity: 1; transform: rotate(-5deg) scale(1.05); }
+  100% { opacity: 0; transform: rotate(-5deg) scale(1.6); }
+}
+
+/* ---------- round result ---------- */
+.rr {
+  position: absolute; inset: -2px; border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: rgba(15, 10, 22, .8);
+  opacity: 0; transition: opacity .18s;
+}
+.rr.is-in { opacity: 1; }
+.rr.is-out { opacity: 0; }
+.rr.is-out, .rr.is-out .rr__eye { pointer-events: none; }   /* leaving: no peek, no tap */
+.rr.is-peek { background: transparent; }
+.rr.is-peek > :not(.rr__eye) { opacity: 0; }
+.rr__card {
+  width: min(92%, 330px); padding: 14px 12px 12px;
+  border: 3px solid var(--ink); border-radius: 20px; background: var(--bg2); box-shadow: 0 5px 0 var(--ink);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  transform: scale(.8); transition: transform .26s var(--ease-back);
+}
+.rr.is-in .rr__card { transform: scale(1); }
+.rr[data-w="1"] .rr__card { border-top: 8px solid var(--p1); }
+.rr[data-w="2"] .rr__card { border-top: 8px solid var(--p2); }
+.rr__big { font-size: min(13vw, 54px); transform: rotate(-3deg); }
+.rr[data-w="2"] .rr__big { color: #9AD0FF; }
+.rr[data-w="1"] .rr__big { color: #FFB3BA; }
+.rr__who { font-size: 16px; font-weight: 800; color: var(--paper); }
+.rr__trap {
+  padding: 4px 9px 3px; border: 2px solid var(--ink); border-radius: 8px; background: var(--gold); color: var(--ink);
+  font: 14px/1.1 var(--font-display); transform: rotate(-2deg); text-align: center;
+}
+.rr__score { display: flex; align-items: center; gap: 8px; }
+.rr__side { display: flex; align-items: center; gap: 5px; }
+.rr__pips { display: flex; gap: 3px; }
+.rr__pips .pip { width: 14px; height: 14px; }
+.rr__num { font: 30px/1 var(--font-display); font-weight: 400; color: var(--paper); }
+.rr__next { font-size: 14px; font-weight: 800; color: var(--dim); }
+.rr__hint { font: 14px/1 var(--font-display); color: var(--paper); opacity: 0; transition: opacity .2s; }
+.rr.can-skip .rr__hint { opacity: .8; animation: blink 1.1s steps(1, end) infinite; }
+.rr__eye { pointer-events: auto; position: absolute; right: 8px; bottom: 8px; flex-direction: row; gap: 5px; font-size: 15px; -webkit-touch-callout: none; }
+.rr__eye .btn__icon { width: 20px; height: 20px; }
+
+/* ---------- coin toss ---------- */
+.coin {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  transition: opacity .16s;
+}
+.coin.is-out { opacity: 0; }
+.coin__title { font-size: min(13vw, 52px); transform: rotate(-4deg); }
+.coin__row { width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.coin__p { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.coin__pt { position: relative; width: 72px; height: 72px; border: 3px solid var(--ink); border-radius: 16px; overflow: hidden; background: var(--ptbg, var(--bg3)); box-shadow: 0 4px 0 var(--ink); }
+.coin__pt .fig { position: absolute; inset: 0; width: 100%; height: 100%; }
+.coin__track { position: relative; width: 120px; height: 72px; }
+.coin__disc {
+  position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  transform: translateX(0);
+}
+.coin__face { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--ink); }
+.coin__face--b { background: #111014; box-shadow: inset 4px 4px 0 rgba(255, 255, 255, .2); }
+.coin__face--w { background: #F5F3EC; box-shadow: inset -4px -4px 0 rgba(0, 0, 0, .14); }
+.coin.go .coin__disc { animation: coin-move var(--dur, 1.2s) cubic-bezier(.3, .1, .3, 1) both; }
+.coin.go .coin__face--w { animation: coin-flip calc(var(--dur, 1.2s) / 7) steps(1, end) 6 both; }
+.coin.is-landed .coin__face--w { animation: none; opacity: 0; }
+.coin.is-frozen .coin__disc { animation: none; transform: translateX(calc(var(--land) * 66px)) translateY(34px) scale(.8); }
+@keyframes coin-move {
+  0%   { transform: translateX(0) translateY(0) scale(1); }
+  15%  { transform: translateX(-60px) translateY(-26px) scale(1.15); }
+  35%  { transform: translateX(60px) translateY(-34px) scale(1.2); }
+  55%  { transform: translateX(-50px) translateY(-22px) scale(1.15); }
+  75%  { transform: translateX(40px) translateY(-12px) scale(1.1); }
+  100% { transform: translateX(calc(var(--land) * 66px)) translateY(34px) scale(.8); }
+}
+@keyframes coin-flip { 0% { opacity: 1; } 50% { opacity: 0; } }
+.coin__res { font: 22px/1 var(--font-display); padding: 8px 14px 9px; border: 3px solid var(--ink); border-radius: 14px; background: var(--paper); color: var(--ink); box-shadow: 0 4px 0 var(--ink); opacity: 0; transform: scale(.7); transition: opacity .18s, transform .22s var(--ease-back); }
+.coin.is-landed .coin__res { opacity: 1; transform: scale(1); }
+[data-motion="reduce"] .coin.go .coin__disc { animation: none; transform: translateX(calc(var(--land) * 66px)) translateY(34px) scale(.8); }
+[data-motion="reduce"] .coin.go .coin__face--w { animation: none; }
+
+/* ---------- pause dialog ---------- */
+.pause { display: flex; flex-direction: column; gap: 12px; }
+.pause__info { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.pause__score { font: 24px/1 var(--font-display); font-weight: 400; color: var(--paper); }
+.pause__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pause .btn--sm { font-size: 16px; flex-direction: row; gap: 6px; }
+.pause .btn--sm .btn__icon { width: 20px; height: 20px; }
+.undo-ask .btn--gold { background: var(--lime); }
+
+/* ---------- short screens (SE in a browser tab): keep everything on screen ---------- */
+@media (max-height: 640px) {
+  .hud { height: 58px; }
+  .hud__p { height: 54px; }
+  .hud__pt { width: 48px; height: 48px; }
+  .bt__bar { height: 52px; }
+  .bt__shake { --bs: min(calc(var(--app-w) - 12px - var(--sal) - var(--sar)), calc(var(--vh) - var(--sat) - var(--sab) - 210px - var(--hud-top, 0px)), 560px); }
+  .bt__stage { min-height: 80px; }
+}

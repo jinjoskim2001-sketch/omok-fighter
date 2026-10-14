@@ -1,0 +1,179 @@
+/* fighters.css — the shared fighter rig. Every character's own file (css/chars/<id>.css) builds on
+   these rules. See docs/SPEC.md §7 for the full contract.
+
+   Structure (built by js/fighter.js from the character's data):
+     <div class="stage [alt]" data-char="<id>" data-state="idle|turn|attack|hit|win|lose" style="--size:…;--dir:1|-1">
+       <div class="shadow"></div><div class="flash"></div>
+       <div class="rig"><svg class="ch ch-<id>" viewBox="0 0 120 120">…parts…</svg></div>
+       <svg class="fx" viewBox="0 0 120 120">…effects that must not spin with the body…</svg>
+     </div>
+
+   Rules that keep WebKit happy:
+   - whole-body motion = the HTML .rig (composited); limbs = SVG <g class="p …"> parts inside a
+     "joint sandwich": <g transform="translate(jx jy)"><g class="p armL"><g transform="translate(-jx -jy)">…
+   - never animate an element that has a transform="" attribute
+   - every @keyframes uses the same transform-function list in every keyframe
+   - no filters, masks, clip-paths, gradients-by-id or `id=` inside character SVG
+   - no `linear()` easing; no individual rotate:/scale:/translate: properties */
+
+:root { --ink: #2A1E2F; }
+
+.stage {
+  position: relative;
+  width: var(--size, 200px);
+  aspect-ratio: 1;
+  /* Always a square, even as the item of a flex row with align-items: stretch (a stretched
+     cross size ignores aspect-ratio and knocks the shadow out of line with the art). A cap rather
+     than align-self, so the container keeps choosing where the stage sits. */
+  max-height: var(--size, 200px);
+  perspective: calc(var(--size, 200px) * 3);   /* for rotateY spins */
+  flex: none;
+}
+.stage > * { position: absolute; inset: 0; }
+.stage .rig { transform-origin: 50% 93%; }
+.stage svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.stage .shadow {
+  inset: auto; left: 28%; width: 44%; top: 91%; height: 5%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(42, 30, 47, .30), rgba(42, 30, 47, 0));
+}
+.stage .flash {
+  border-radius: 50%; opacity: 0;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(255, 246, 200, .55) 45%, rgba(255, 255, 255, 0));
+}
+.stage, .stage * { pointer-events: none; }
+
+/* outline + joint conventions */
+.ch .o  { stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.ch .o2 { stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.ch .ln { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ch .ink { fill: var(--ink); }
+.ch .p, .fx .p { transform-box: view-box; transform-origin: 0 0; }
+.ch .eye, .ch .sc, .fx .sc { transform-box: fill-box; transform-origin: 50% 50%; }
+
+/* faces: A = default, B = victory, C = lose. Effects are hidden until a state animates them. */
+.stage .face-b, .stage .face-c { opacity: 0; }
+.stage .fx [class^="fx-"], .stage .fx [class*=" fx-"] { opacity: 0; }
+
+/* promote only the HTML layers, only while a one-shot state runs */
+.stage:is([data-state="win"], [data-state="lose"]) :is(.rig, .flash, .shadow) { will-change: transform, opacity; }
+
+/* ---------- idle: composited breathing only (characters may override per id) ---------- */
+.stage[data-state="idle"] .rig { animation: fighter-breathe 2.6s ease-in-out infinite; }
+@keyframes fighter-breathe {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  50%      { transform: translate(0%, 0%) rotate(0deg) scale(1.018, .982); }
+}
+/* JS adds .fidget for one short flourish every 5-9 s */
+.stage.fidget .eye { animation: fighter-blink .35s ease-in-out 1; }
+@keyframes fighter-blink { 0%, 100% { transform: scaleY(1); } 45% { transform: scaleY(.12); } }
+
+/* ---------- attack / hit: shared one-shots used during battle (js/fighter.js returns to idle) ---------- */
+.stage[data-state="attack"] .rig { animation: fighter-attack .28s cubic-bezier(.2, .9, .3, 1.2) both; }
+.stage[data-state="hit"] .rig    { animation: fighter-hit .22s ease-out both; }
+@keyframes fighter-attack {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  35%  { transform: translate(calc(var(--dir, 1) * 14%), -4%) rotate(calc(var(--dir, 1) * 8deg)) scale(1.08, .94); }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+@keyframes fighter-hit {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  30%  { transform: translate(calc(var(--dir, 1) * -7%), 0%) rotate(calc(var(--dir, 1) * -6deg)) scale(.96, 1.03); }
+  60%  { transform: translate(calc(var(--dir, 1) * 3%), 0%) rotate(calc(var(--dir, 1) * 2deg)) scale(1, 1); }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+
+/* ---------- lose: shared dizzy stars (a character's fx svg may include <g class="fx-dizzy"> with 3 .star) ---------- */
+.stage[data-state="lose"] .face-a { opacity: 0; }
+.stage[data-state="lose"] .face-c { opacity: 1; }
+.stage[data-state="lose"] .fx .fx-dizzy { opacity: 1; }
+.stage[data-state="lose"] .fx-dizzy .star { animation: fighter-orbit 1.2s linear infinite; }
+.stage[data-state="lose"] .fx-dizzy .star:nth-child(2) { animation-delay: -.4s; }
+.stage[data-state="lose"] .fx-dizzy .star:nth-child(3) { animation-delay: -.8s; }
+@keyframes fighter-orbit {   /* an ellipse traced with translate only, so stars are never squashed */
+  0%    { transform: translate(0px, 6px)    scale(1); }
+  12.5% { transform: translate(-15px, 4px)  scale(.95); }
+  25%   { transform: translate(-21px, 0px)  scale(.85); }
+  37.5% { transform: translate(-15px, -4px) scale(.7); }
+  50%   { transform: translate(0px, -6px)   scale(.6); }
+  62.5% { transform: translate(15px, -4px)  scale(.7); }
+  75%   { transform: translate(21px, 0px)   scale(.85); }
+  87.5% { transform: translate(15px, 4px)   scale(.95); }
+  100%  { transform: translate(0px, 6px)    scale(1); }
+}
+@keyframes fighter-sway {
+  0%, 100% { transform: translate(0%, 1%) rotate(-3deg) scale(1.03, .95); }
+  50%      { transform: translate(0%, 1%) rotate(3deg) scale(1.03, .95); }
+}
+
+/* ---------- reduced motion: one source of truth on <html data-motion="reduce"> ---------- */
+[data-motion="reduce"] .stage, [data-motion="reduce"] .stage * { animation: none !important; }
+[data-motion="reduce"] .stage[data-state="win"] .face-a { opacity: 0; }
+[data-motion="reduce"] .stage[data-state="win"] .face-b { opacity: 1; }
+[data-motion="reduce"] .stage[data-state="lose"] .fx .fx-dizzy { opacity: 0; }
+@keyframes fighter-rm-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ======================================================================================
+   Extensions (fighter-infra). Everything below is additive; the contract above is unchanged.
+   ====================================================================================== */
+
+/* ---------- static figures from portraitHTML() / figureHTML() (HUD 초상, 선택 칸) ----------
+   <div class="fig fig-portrait|fig-full [alt]" data-id="<id>"><svg class="ch ch-<id>" …></div>
+   No .stage and no data-state, so no state/fidget animation selector can match: always the A face.
+   Fills its container's width (or set --fig-size); always square. */
+.fig { position: relative; display: block; width: var(--fig-size, 100%); aspect-ratio: 1; flex: none; line-height: 0; }
+.fig > svg { width: 100%; height: 100%; display: block; }
+.fig-portrait > svg { overflow: hidden; }
+.fig-full > svg { overflow: visible; }
+.fig .face-b, .fig .face-c { opacity: 0; }
+/* …and any extra face a character adds (face-d, face-g, face-s, face-w, bulttong's in/sq/ach/up/joy):
+   a static figure shows the A face only, never two stacked. */
+.fig :is([class^="face-"], [class*=" face-"]):not(.face-a) { opacity: 0; }
+.fig, .fig * { pointer-events: none; }
+
+/* ---------- shared fallbacks: a character's own .stage[data-char="<id>"][data-state=…] rules are more
+   specific and replace these. They only show for a character that lacks that state. ---------- */
+.stage[data-state="turn"] .rig { animation: fighter-turn .6s cubic-bezier(.3, 1.4, .6, 1) both; }
+@keyframes fighter-turn {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  20%  { transform: translate(0%, 1.5%) rotate(0deg) scale(1.06, .94); }
+  50%  { transform: translate(0%, -7%) rotate(0deg) scale(.96, 1.05); }
+  78%  { transform: translate(0%, 0.5%) rotate(0deg) scale(1.04, .96); }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+.stage[data-state="win"] .rig {
+  transform-origin: 50% 60%;
+  animation: fighter-win 2.4s ease-in-out both, fighter-win-loop 1.2s 2.4s ease-in-out infinite;
+}
+@keyframes fighter-win {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  8%   { transform: translate(0%, 2%) rotate(0deg) scale(1.07, .93); }
+  18%  { transform: translate(0%, -12%) rotate(-6deg) scale(.96, 1.05); }
+  28%  { transform: translate(0%, 1%) rotate(0deg) scale(1.06, .94); }
+  38%  { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  50%  { transform: translate(0%, 3%) rotate(0deg) scale(1.1, .88); }
+  58%  { transform: translate(0%, -20%) rotate(180deg) scale(.96, 1.04); }
+  65%  { transform: translate(0%, -24%) rotate(360deg) scale(1, 1); }
+  76%  { transform: translate(0%, 2%) rotate(360deg) scale(1.1, .9); }
+  86%  { transform: translate(0%, 0%) rotate(360deg) scale(.98, 1.03); }
+  100% { transform: translate(0%, 0%) rotate(360deg) scale(1, 1); }
+}
+@keyframes fighter-win-loop {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  50%      { transform: translate(0%, -4%) rotate(0deg) scale(.98, 1.02); }
+}
+.stage[data-state="win"] .face-a { animation: fighter-face-a-win 2.4s step-end both; }
+.stage[data-state="win"] .face-b { animation: fighter-face-b-win 2.4s step-end both; }
+@keyframes fighter-face-a-win { 0% { opacity: 1; } 65%, 100% { opacity: 0; } }
+@keyframes fighter-face-b-win { 0% { opacity: 0; } 65%, 100% { opacity: 1; } }
+.stage[data-state="lose"] .rig { animation: fighter-lose 1s ease-out both, fighter-sway 2.4s 1s ease-in-out infinite; }
+@keyframes fighter-lose {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  25%  { transform: translate(0%, -3%) rotate(0deg) scale(.96, 1.05); }
+  60%  { transform: translate(0%, 2%) rotate(-4deg) scale(1.06, .9); }
+  100% { transform: translate(0%, 1%) rotate(-3deg) scale(1.03, .95); }
+}
+
+/* ---------- K.O. hit-stop (SPEC §3.1): any ancestor with .hitstop freezes the stage for its duration.
+   The victory director reads the CSS clock, so cues simply wait. ---------- */
+.hitstop .stage, .hitstop .stage *, .stage.hitstop, .stage.hitstop * { animation-play-state: paused !important; }

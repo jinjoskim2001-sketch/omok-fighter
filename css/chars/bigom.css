@@ -1,0 +1,346 @@
+/* css/chars/bigom.css — 비곰 Bigom, the b-boy bear. Builds on css/fighters.css (docs/SPEC.md §7, §8.5).
+   Parts (joint sandwiches in js/chars/bigom.js): legL legR (hips 51,92 / 69,92) · armL armR (shoulders 44,77 / 76,77)
+   · head (neck 60,70) · beanie (60,40, holds the ears). Positive rotate swings a hanging limb toward screen-left.
+   Function lists per keyframe set: rig = translate rotate rotateY scale · legs = rotate translate (translate runs
+   along the leg, so a leg "extends" for the power moves) · head = translate rotate · arms = rotate. */
+
+/* ---------- palette P1 + alt (P2 mirror match) ---------- */
+.ch-bigom {
+  --fur: #8B5A3C; --fur-in: #E9B48A; --muzzle: #F3D9B1;
+  --suit: #2F6BFF; --suit-sh: #2350C8; --cuff: #FFFFFF;
+  --hat: #FFC83D; --hat-band: #F5A524; --shoe: #FFFFFF; --sole: #FF4D4D;
+  --cheek: #FF8FA3; --mouth: #6B2335; --tongue: #FF7A8A;
+}
+.alt .ch-bigom, .ch-bigom.alt { --fur: #5E3B28; --suit: #FF4F8B; --suit-sh: #D93A72; --hat: #3FD9A8; --hat-band: #22B386; }
+
+.ch-bigom .fur { fill: var(--fur); }
+.ch-bigom .fur-in { fill: var(--fur-in); }
+.ch-bigom .muzzle { fill: var(--muzzle); }
+.ch-bigom .suit { fill: var(--suit); }
+.ch-bigom .suit-sh { fill: var(--suit-sh); }
+.ch-bigom .cuff { fill: var(--cuff); }
+.ch-bigom .hat { fill: var(--hat); }
+.ch-bigom .hat-band { fill: var(--hat-band); }
+.ch-bigom .shoe { fill: var(--shoe); }
+.ch-bigom .cheek { fill: var(--cheek); opacity: .6; }
+.ch-bigom .mouth { fill: var(--mouth); }
+.ch-bigom .tongue { fill: var(--tongue); }
+.ch-bigom .hl { fill: #fff; }
+.ch-bigom .nose-hi { fill: #fff; opacity: .7; }
+.ch-bigom .sole { fill: none; stroke: var(--sole); stroke-width: 2; stroke-linecap: round; }
+.ch-bigom .zip { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; opacity: .9; }
+.ch-bigom .chev { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ch-bigom .shine { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; opacity: .55; }
+.ch-bigom .rib { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; opacity: .22; }
+/* face B/C also hidden outside a .stage (portraitHTML / figureHTML); stage state rules out-rank this */
+.ch-bigom .face-b, .ch-bigom .face-c { opacity: 0; }
+.ch-bigom .ln.thin { stroke-width: 2; }
+.ch-bigom .ln.wink { stroke-width: 2.8; }
+
+/* ---------- effects layer (sibling svg: does not spin with the body) ---------- */
+.stage[data-char="bigom"] .fx-mill { fill: none; stroke: #fff; stroke-linecap: round; }
+.stage[data-char="bigom"] .fx-mill .mill-a { stroke-width: 3.2; }
+.stage[data-char="bigom"] .fx-mill .mill-b { stroke-width: 2; opacity: .6; }
+.stage[data-char="bigom"] .fx-spin { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 14 10; }
+.stage[data-char="bigom"] .fx-spin .spin-floor { stroke: var(--ink); stroke-width: 2; opacity: .35; }
+.stage[data-char="bigom"] .fx-spin .spin-top { stroke-dasharray: 8 12; }
+.stage[data-char="bigom"] .fx-burst { fill: none; stroke: #FFC83D; stroke-width: 3.2; stroke-linecap: round; }
+.stage[data-char="bigom"] .stk-bg { fill: #fff; stroke: var(--ink); stroke-width: 2.4; }
+.stage[data-char="bigom"] .stk-txt { fill: #2F6BFF; font: 900 13px system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif; }
+.stage[data-char="bigom"] .ttaeng-bg { fill: #FFC83D; stroke: var(--ink); stroke-width: 2.4; }
+.stage[data-char="bigom"] .ttaeng-txt { fill: var(--ink); font: 900 13px system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif; }
+.stage[data-char="bigom"] .fx-dizzy { fill: #FFC83D; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
+.stage[data-char="bigom"] .fx-dizzy .star { transform-box: view-box; transform-origin: 0 0; }
+
+/* ---------- idle: shared composited breathe. fidget (0.8 s) = shared blink + two head nods on the beat ---------- */
+.stage[data-char="bigom"].fidget .head { animation: bigom-fidget-head .8s ease-in-out 1; }
+@keyframes bigom-fidget-head {
+  0%, 50%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  22%           { transform: translate(0px, 1.8px) rotate(5deg); }
+  72%           { transform: translate(0px, 1.8px) rotate(-5deg); }
+}
+
+/* ---------- my turn: one toprock step — hop-kick left, land on the beat, hop-kick right (0.6 s) ---------- */
+.stage[data-char="bigom"][data-state="turn"] .rig {
+  animation: bigom-turn .6s ease-in-out both, fighter-breathe 2.6s .6s ease-in-out infinite;
+}
+.stage[data-char="bigom"][data-state="turn"] .armL { animation: bigom-turn-armL .6s ease-in-out both; }
+.stage[data-char="bigom"][data-state="turn"] .armR { animation: bigom-turn-armR .6s ease-in-out both; }
+.stage[data-char="bigom"][data-state="turn"] .legL { animation: bigom-turn-legL .6s ease-in-out both; }
+.stage[data-char="bigom"][data-state="turn"] .legR { animation: bigom-turn-legR .6s ease-in-out both; }
+.stage[data-char="bigom"][data-state="turn"] .head { animation: bigom-turn-head .6s ease-in-out both; }
+@keyframes bigom-turn {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  22%  { transform: translate(-3%, -5%) rotate(-6deg) scale(1, 1); }
+  44%  { transform: translate(0%, .5%) rotate(0deg) scale(1.06, .94); }
+  70%  { transform: translate(3%, -5%) rotate(6deg) scale(1, 1); }
+  88%  { transform: translate(0%, .3%) rotate(0deg) scale(1.03, .97); }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+@keyframes bigom-turn-armL { 0%, 100% { transform: rotate(0deg); } 22% { transform: rotate(-38deg); } 44% { transform: rotate(22deg); } 70% { transform: rotate(-38deg); } 88% { transform: rotate(8deg); } }
+@keyframes bigom-turn-armR { 0%, 100% { transform: rotate(0deg); } 22% { transform: rotate(38deg); } 44% { transform: rotate(-22deg); } 70% { transform: rotate(38deg); } 88% { transform: rotate(-8deg); } }
+@keyframes bigom-turn-legL {
+  0%, 44%, 100% { transform: rotate(0deg) translate(0px, 0px); }
+  22% { transform: rotate(-4deg) translate(0px, 0px); }
+  70% { transform: rotate(30deg) translate(0px, 1px); }
+}
+@keyframes bigom-turn-legR {
+  0%, 44%, 100% { transform: rotate(0deg) translate(0px, 0px); }
+  22% { transform: rotate(-30deg) translate(0px, 1px); }
+  70% { transform: rotate(4deg) translate(0px, 0px); }
+}
+@keyframes bigom-turn-head {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  22%      { transform: translate(0px, 0px) rotate(7deg); }
+  44%      { transform: translate(0px, 2px) rotate(0deg); }
+  70%      { transform: translate(0px, 0px) rotate(-7deg); }
+  88%      { transform: translate(0px, 1px) rotate(0deg); }
+}
+
+/* ---------- WIN (2.4 s): toprock 0–.38 › windmill .38–.92 › headspin .92–1.56 › HIT 1.56 freeze "얼음!" ›
+   kip-up 2.00–2.33 "땡!" › b-boy stance. Then a 2-beat nod loop at 95 BPM (1.26 s) from 2.4 s. ---------- */
+.stage[data-char="bigom"][data-state="win"] .rig {
+  transform-origin: 50% 52.5%;   /* (60,63): puts the beanie top on the floor when upside down */
+  animation: bigom-win 2.4s linear both, bigom-loop 1.26s 2.4s ease-in-out infinite;
+}
+.stage[data-char="bigom"][data-state="win"] .legL   { animation: bigom-legL 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .legR   { animation: bigom-legR 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .armL   { animation: bigom-armL 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .armR   { animation: bigom-armR 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .head   { animation: bigom-head 2.4s ease-in-out both, bigom-nod 1.26s 2.4s ease-in-out infinite; }
+.stage[data-char="bigom"][data-state="win"] .face-a { animation: bigom-show-until-hit 2.4s step-end both; }
+.stage[data-char="bigom"][data-state="win"] .face-b { animation: bigom-show-from-hit 2.4s step-end both; }
+.stage[data-char="bigom"][data-state="win"] .fx-mill    { animation: bigom-fx-mill 2.4s linear both; }
+.stage[data-char="bigom"][data-state="win"] .fx-spin    { animation: bigom-fx-spin 2.4s linear both; }
+.stage[data-char="bigom"][data-state="win"] .fx-burst   { animation: bigom-fx-burst 2.4s ease-out both; }
+.stage[data-char="bigom"][data-state="win"] .fx-sticker { animation: bigom-fx-sticker 2.4s ease-out both; }
+.stage[data-char="bigom"][data-state="win"] .fx-ttaeng  { animation: bigom-fx-ttaeng 2.4s ease-out both; }
+.stage[data-char="bigom"][data-state="win"] .flash      { animation: bigom-flash 2.4s ease-out both; }
+.stage[data-char="bigom"][data-state="win"] .shadow     { animation: bigom-shadow 2.4s ease-in-out both; }
+
+/* whole body on the composited HTML wrapper; the same function list in EVERY keyframe so 540deg/1080deg really spin */
+@keyframes bigom-win {
+  0%      { transform: translate(0%, 0%)     rotate(0deg)   rotateY(0deg)    scale(1, 1);      animation-timing-function: ease-out; }
+  4.17%   { transform: translate(-3%, -4%)   rotate(-6deg)  rotateY(0deg)    scale(1, 1);      animation-timing-function: ease-in; }    /* toprock: hop-kick */
+  7.92%   { transform: translate(0%, 2%)     rotate(0deg)   rotateY(0deg)    scale(1.05, .95); animation-timing-function: ease-out; }   /* on the beat */
+  12.08%  { transform: translate(3%, -4%)    rotate(6deg)   rotateY(0deg)    scale(1, 1);      animation-timing-function: ease-in; }    /* hop-kick */
+  15.83%  { transform: translate(0%, 5.5%)   rotate(0deg)   rotateY(0deg)    scale(1.1, .86);  animation-timing-function: linear; }     /* drop */
+  /* windmill x1.5: constant spin, the body rolls on the floor (smooth 180deg bounce, solved against the pose) */
+  17.08%  { transform: translate(0%, -1.5%)  rotate(30deg)  rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  18.33%  { transform: translate(0%, 3.5%)   rotate(60deg)  rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  19.58%  { transform: translate(0%, 6%)     rotate(90deg)  rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  20.83%  { transform: translate(0%, 3.5%)   rotate(120deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  22.08%  { transform: translate(0%, -1.5%)  rotate(150deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  23.33%  { transform: translate(0%, -4%)    rotate(180deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  24.58%  { transform: translate(0%, -1.5%)  rotate(210deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  25.83%  { transform: translate(0%, 3.5%)   rotate(240deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  27.08%  { transform: translate(0%, 6%)     rotate(270deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  28.33%  { transform: translate(0%, 3.5%)   rotate(300deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  29.58%  { transform: translate(0%, -1.5%)  rotate(330deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  30.83%  { transform: translate(0%, -4%)    rotate(360deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  32.08%  { transform: translate(0%, -1.5%)  rotate(390deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  33.33%  { transform: translate(0%, 3.5%)   rotate(420deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  34.58%  { transform: translate(0%, 6%)     rotate(450deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  35.83%  { transform: translate(0%, 3.5%)   rotate(480deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  37.08%  { transform: translate(0%, -1.5%)  rotate(510deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: linear; }
+  38.33%  { transform: translate(0%, -1.25%) rotate(540deg) rotateY(0deg)    scale(1, 1);      animation-timing-function: cubic-bezier(.5, 0, 1, 1); } /* headspin on the beanie, accelerating */
+  65%     { transform: translate(0%, -1.25%) rotate(540deg) rotateY(1080deg) scale(1, 1);      animation-timing-function: ease-out; }   /* HIT: lock */
+  66.67%  { transform: translate(0%, -.7%)   rotate(552deg) rotateY(1080deg) scale(1.06, .94); animation-timing-function: ease-in-out; }
+  69.17%  { transform: translate(0%, -1.5%)  rotate(548deg) rotateY(1080deg) scale(1, 1); }
+  83.33%  { transform: translate(0%, -1.5%)  rotate(548deg) rotateY(1080deg) scale(1, 1);      animation-timing-function: ease-out; }   /* freeze held clean */
+  85.42%  { transform: translate(0%, 1.6%)   rotate(543deg) rotateY(1080deg) scale(1.05, .93); animation-timing-function: ease-in; }    /* coil */
+  89.17%  { transform: translate(0%, -17%)   rotate(632deg) rotateY(1080deg) scale(1, 1);      animation-timing-function: ease-in; }    /* kip-up */
+  93.75%  { transform: translate(0%, -3%)    rotate(714deg) rotateY(1080deg) scale(.95, 1.06); animation-timing-function: ease-out; }
+  97.08%  { transform: translate(0%, 3.9%)   rotate(720deg) rotateY(1080deg) scale(1.1, .9);   animation-timing-function: ease-out; }   /* land */
+  100%    { transform: translate(0%, 0%)     rotate(720deg) rotateY(1080deg) scale(1, 1); }
+}
+/* 2 beats @ 95 BPM: bounce on the beat (arms stay crossed, held by fill-mode) */
+@keyframes bigom-loop {
+  0%, 50%, 100% { transform: translate(0%, 0%) rotate(0deg) rotateY(0deg) scale(1, 1); }
+  12%, 62%      { transform: translate(0%, 1.2%) rotate(0deg) rotateY(0deg) scale(1.025, .97); }
+}
+@keyframes bigom-nod {
+  0%, 50%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  12%           { transform: translate(0px, 1.5px) rotate(4deg); }
+  62%           { transform: translate(0px, 1.5px) rotate(-4deg); }
+}
+@keyframes bigom-legL {
+  0%, 7.92%      { transform: rotate(0deg) translate(0px, 0px); }
+  4.17%          { transform: rotate(-4deg) translate(0px, 0px); }
+  12.08%         { transform: rotate(30deg) translate(0px, 1px); }    /* kick out */
+  15.83%         { transform: rotate(10deg) translate(0px, 0px); }
+  17.5%, 36%     { transform: rotate(54deg) translate(0px, 6px); }    /* windmill V, legs extended */
+  38.33%         { transform: rotate(50deg) translate(0px, 6px); }
+  62%, 63.33%    { transform: rotate(16deg) translate(0px, 4px); }    /* legs close: the spin speeds up */
+  65%, 83.33%    { transform: rotate(-6deg) translate(0px, 7px); }    /* FREEZE: this leg points at the sky */
+  85.42%         { transform: rotate(24deg) translate(0px, 0px); }
+  89.17%         { transform: rotate(-12deg) translate(0px, 3px); }
+  93.75%         { transform: rotate(0deg) translate(0px, 1px); }
+  97.08%         { transform: rotate(8deg) translate(0px, 0px); }
+  100%           { transform: rotate(5deg) translate(0px, 0px); }      /* stance */
+}
+@keyframes bigom-legR {
+  0%, 7.92%      { transform: rotate(0deg) translate(0px, 0px); }
+  4.17%          { transform: rotate(-30deg) translate(0px, 1px); }   /* kick out */
+  12.08%         { transform: rotate(4deg) translate(0px, 0px); }
+  15.83%         { transform: rotate(-10deg) translate(0px, 0px); }
+  17.5%, 36%     { transform: rotate(-54deg) translate(0px, 6px); }
+  38.33%         { transform: rotate(-50deg) translate(0px, 6px); }
+  62%, 63.33%    { transform: rotate(-16deg) translate(0px, 4px); }
+  65%, 83.33%    { transform: rotate(-88deg) translate(0px, 7px); }   /* FREEZE: this leg kicks out flat */
+  85.42%         { transform: rotate(-24deg) translate(0px, 0px); }
+  89.17%         { transform: rotate(12deg) translate(0px, 3px); }
+  93.75%         { transform: rotate(0deg) translate(0px, 1px); }
+  97.08%         { transform: rotate(-8deg) translate(0px, 0px); }
+  100%           { transform: rotate(-5deg) translate(0px, 0px); }
+}
+@keyframes bigom-armL {
+  0%             { transform: rotate(0deg); }
+  4.17%, 12.08%  { transform: rotate(-38deg); }   /* toprock: arms cross… */
+  7.92%          { transform: rotate(24deg); }    /* …and open on the beat */
+  15.83%         { transform: rotate(40deg); }
+  17.5%, 36%     { transform: rotate(105deg); }
+  38.33%         { transform: rotate(98deg); }
+  44%            { transform: rotate(85deg); }    /* hands-free headspin */
+  62%, 63.33%    { transform: rotate(58deg); }
+  65%, 83.33%    { transform: rotate(-64deg); }   /* FREEZE: arms crossed */
+  85.42%         { transform: rotate(-30deg); }
+  89.17%         { transform: rotate(80deg); }
+  93.75%         { transform: rotate(40deg); }
+  97.08%, 100%   { transform: rotate(-60deg); }
+}
+@keyframes bigom-armR {
+  0%             { transform: rotate(0deg); }
+  4.17%, 12.08%  { transform: rotate(38deg); }
+  7.92%          { transform: rotate(-24deg); }
+  15.83%         { transform: rotate(-40deg); }
+  17.5%, 36%     { transform: rotate(-105deg); }
+  38.33%         { transform: rotate(-98deg); }
+  44%            { transform: rotate(-85deg); }
+  62%, 63.33%    { transform: rotate(-58deg); }
+  65%, 83.33%    { transform: rotate(64deg); }
+  85.42%         { transform: rotate(30deg); }
+  89.17%         { transform: rotate(-80deg); }
+  93.75%         { transform: rotate(-40deg); }
+  97.08%, 100%   { transform: rotate(60deg); }
+}
+@keyframes bigom-head {
+  0%, 100%       { transform: translate(0px, 0px) rotate(0deg); }
+  4.17%          { transform: translate(0px, 0px) rotate(7deg); }
+  7.92%          { transform: translate(0px, 2px) rotate(0deg); }
+  12.08%         { transform: translate(0px, 0px) rotate(-7deg); }
+  15.83%, 63.33% { transform: translate(0px, 0px) rotate(0deg); }
+  65%, 83.33%    { transform: translate(0px, 0px) rotate(-5deg); }
+  89.17%         { transform: translate(0px, 0px) rotate(0deg); }
+  97.08%         { transform: translate(0px, 2px) rotate(0deg); }
+}
+@keyframes bigom-show-until-hit { 0% { opacity: 1; } 65%, 100% { opacity: 0; } }
+@keyframes bigom-show-from-hit  { 0% { opacity: 0; } 65%, 100% { opacity: 1; } }
+/* windmill trails ride along with the body (same pivot, same floor bounce in user units: 14% = 16.8) */
+@keyframes bigom-fx-mill {
+  0%, 15.83% { opacity: 0; transform: translate(0px, 6.6px) rotate(0deg); }
+  17.08%     { opacity: 1; transform: translate(0px, -1.8px) rotate(30deg); }
+  18.33%     { opacity: 1; transform: translate(0px, 4.2px) rotate(60deg); }
+  19.58%     { opacity: 1; transform: translate(0px, 7.2px) rotate(90deg); }
+  20.83%     { opacity: 1; transform: translate(0px, 4.2px) rotate(120deg); }
+  22.08%     { opacity: 1; transform: translate(0px, -1.8px) rotate(150deg); }
+  23.33%     { opacity: 1; transform: translate(0px, -4.8px) rotate(180deg); }
+  24.58%     { opacity: 1; transform: translate(0px, -1.8px) rotate(210deg); }
+  25.83%     { opacity: 1; transform: translate(0px, 4.2px) rotate(240deg); }
+  27.08%     { opacity: 1; transform: translate(0px, 7.2px) rotate(270deg); }
+  28.33%     { opacity: 1; transform: translate(0px, 4.2px) rotate(300deg); }
+  29.58%     { opacity: 1; transform: translate(0px, -1.8px) rotate(330deg); }
+  30.83%     { opacity: 1; transform: translate(0px, -4.8px) rotate(360deg); }
+  32.08%     { opacity: 1; transform: translate(0px, -1.8px) rotate(390deg); }
+  33.33%     { opacity: 1; transform: translate(0px, 4.2px) rotate(420deg); }
+  34.58%     { opacity: 1; transform: translate(0px, 7.2px) rotate(450deg); }
+  35.83%     { opacity: .9; transform: translate(0px, 4.2px) rotate(480deg); }
+  37.08%     { opacity: .5; transform: translate(0px, -1.8px) rotate(510deg); }
+  38.33%, 100% { opacity: 0; transform: translate(0px, -1.5px) rotate(540deg); }
+}
+@keyframes bigom-fx-spin {
+  0%, 39%     { opacity: 0; stroke-dashoffset: 0; }
+  42%, 63.5%  { opacity: 1; }
+  65%, 100%   { opacity: 0; stroke-dashoffset: -420; }
+}
+@keyframes bigom-fx-burst {
+  0%, 64.9% { opacity: 0; transform: scale(.55); }
+  65%       { opacity: 1; transform: scale(.7); }
+  74%, 100% { opacity: 0; transform: scale(1.25); }
+}
+@keyframes bigom-fx-sticker {
+  0%, 64.9% { opacity: 0; transform: scale(0) rotate(-24deg); }
+  67.5%     { opacity: 1; transform: scale(1.25) rotate(-4deg); animation-timing-function: ease-in-out; }
+  70%, 82%  { opacity: 1; transform: scale(1) rotate(-10deg); }
+  85.5%, 100% { opacity: 0; transform: scale(.4) rotate(-10deg); }
+}
+@keyframes bigom-fx-ttaeng {
+  0%, 84%   { opacity: 0; transform: scale(0) rotate(20deg); }
+  86.5%     { opacity: 1; transform: scale(1.3) rotate(4deg); animation-timing-function: ease-in-out; }
+  89%, 95%  { opacity: 1; transform: scale(1) rotate(8deg); }
+  99%, 100% { opacity: 0; transform: scale(.5) rotate(8deg); }
+}
+@keyframes bigom-flash {
+  0%, 64.9% { opacity: 0; transform: scale(.4); }
+  65.5%     { opacity: .95; transform: scale(.9); }
+  72%, 100% { opacity: 0; transform: scale(1.3); }
+}
+@keyframes bigom-shadow {
+  0%, 100%       { transform: scale(1, 1); opacity: 1; }
+  4.17%, 12.08%  { transform: scale(.85, .9); opacity: .8; }
+  7.92%          { transform: scale(1.05, 1); opacity: 1; }
+  15.83%         { transform: scale(1.15, 1); opacity: 1; }
+  19.58%, 34.58% { transform: scale(1.4, 1.1); opacity: .9; }
+  38.33%, 83.33% { transform: scale(.75, .9); opacity: 1; }
+  89.17%         { transform: scale(.55, .7); opacity: .5; }
+  97.08%         { transform: scale(1.15, 1); opacity: 1; }
+}
+
+/* ---------- LOSE (1.0 s + sway loop): "huh?" stretch, slump, beanie slides over the eyes, dizzy stars ---------- */
+.stage[data-char="bigom"][data-state="lose"] .rig { animation: bigom-lose 1s ease-out both, fighter-sway 2.4s 1s ease-in-out infinite; }
+.stage[data-char="bigom"][data-state="lose"] .beanie { animation: bigom-hat-slip .55s .3s both; }
+.stage[data-char="bigom"][data-state="lose"] .head { animation: bigom-lose-head .7s .2s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .armL { animation: bigom-droop-L .7s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .armR { animation: bigom-droop-R .7s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .legL { animation: bigom-knock-L .5s .25s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .legR { animation: bigom-knock-R .5s .25s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .fx-dizzy { animation: bigom-dizzy-in .3s .55s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .face-a { animation: bigom-off .16s step-end both; }   /* "huh?" first… */
+.stage[data-char="bigom"][data-state="lose"] .face-c { animation: bigom-on .16s step-end both; }    /* …then X eyes */
+@keyframes bigom-lose {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  16%  { transform: translate(0%, -4%) rotate(0deg) scale(.94, 1.07); animation-timing-function: ease-in; }
+  40%  { transform: translate(0%, 2%) rotate(-5deg) scale(1.07, .9); }
+  62%  { transform: translate(0%, .5%) rotate(2deg) scale(1.02, .97); }
+  82%  { transform: translate(0%, 1.2%) rotate(-3.5deg) scale(1.04, .94); }
+  100% { transform: translate(0%, 1%) rotate(-3deg) scale(1.03, .95); }
+}
+@keyframes bigom-hat-slip {
+  0%   { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: ease-in; }
+  55%  { transform: translate(-2px, 13px) rotate(-10deg); animation-timing-function: ease-out; }
+  78%  { transform: translate(-2px, 9.5px) rotate(-7deg); animation-timing-function: ease-in-out; }
+  100% { transform: translate(-2px, 11px) rotate(-8deg); }
+}
+@keyframes bigom-lose-head {
+  0%   { transform: translate(0px, 0px) rotate(0deg); }
+  100% { transform: translate(0px, 1.5px) rotate(5deg); }
+}
+@keyframes bigom-droop-L { 0% { transform: rotate(0deg); } 55% { transform: rotate(-18deg); } 100% { transform: rotate(-12deg); } }
+@keyframes bigom-droop-R { 0% { transform: rotate(0deg); } 55% { transform: rotate(18deg); } 100% { transform: rotate(12deg); } }
+@keyframes bigom-knock-L { from { transform: rotate(0deg) translate(0px, 0px); } to { transform: rotate(-6deg) translate(0px, 0px); } }
+@keyframes bigom-knock-R { from { transform: rotate(0deg) translate(0px, 0px); } to { transform: rotate(6deg) translate(0px, 0px); } }
+@keyframes bigom-dizzy-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bigom-off { from { opacity: 1; } to { opacity: 0; } }
+@keyframes bigom-on  { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- reduced motion: the freeze itself is the static victory pose ---------- */
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .rig { transform-origin: 50% 52.5%; transform: translate(0%, -1.5%) rotate(188deg); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .legL { transform: rotate(-6deg) translate(0px, 7px); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .legR { transform: rotate(-88deg) translate(0px, 7px); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .armL { transform: rotate(-64deg); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .armR { transform: rotate(64deg); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .head { transform: translate(0px, 0px) rotate(-5deg); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .shadow { transform: scale(.75, .9); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .fx-sticker { opacity: 1; transform: rotate(-10deg); animation: fighter-rm-fade .4s ease-out both !important; }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="lose"] .beanie { transform: translate(-2px, 11px) rotate(-8deg); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="lose"] .head { transform: translate(0px, 1.5px) rotate(5deg); }

@@ -1,0 +1,19 @@
+{
+  "name": "돌주먹 — 오목 파이터",
+  "short_name": "돌주먹",
+  "description": "친구랑 한 폰으로, 캐릭터 골라 붙는 오목 한 판. 홈 화면에 추가하면 앱처럼!",
+  "lang": "ko",
+  "dir": "ltr",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "./",
+  "scope": "./",
+  "theme_color": "#17121F",
+  "background_color": "#17121F",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

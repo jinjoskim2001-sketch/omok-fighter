@@ -1,0 +1,550 @@
+/* css/chars/nyangja.css — 냥자 Nyangja, the ninja cat. Builds on css/fighters.css (docs/SPEC.md §7, §8.5). */
+
+/* ---------- palette P1 + alt (P2 mirror match: a white cat with a pink scarf) ---------- */
+.ch-nyangja {
+  --fur: #3B3A84; --fur-sh: #2C2B68; --light: #F1EEFF; --muzzle: #F1EEFF;
+  --scarf: #5EE39B; --scarf-sh: #3CC47D; --iris: #FFE45E; --ear-in: #FF9FB8; --nose: #FF9FB8;
+  --whisker: #F1EEFF; --blush: #FF8FB0; --mouth: #7A2335;
+  --moon: #FFF1B8; --moon-sh: #F4DD8C; --steel: #D4D9E6;
+}
+.alt .ch-nyangja {
+  --fur: #F1EEFF; --fur-sh: #D6D0EE; --light: #FFFFFF; --muzzle: #FFFFFF;
+  --scarf: #FF5C8A; --scarf-sh: #E0436F; --iris: #5AC8FF; --whisker: #8C84AE;
+}
+
+.ch-nyangja .fur { fill: var(--fur); }
+.ch-nyangja .fur-sh { fill: var(--fur-sh); }
+.ch-nyangja .light { fill: var(--light); }
+.ch-nyangja .muzzle { fill: var(--muzzle); }
+.ch-nyangja .scarf-c { fill: var(--scarf); }
+.ch-nyangja .scarf-sh { fill: var(--scarf-sh); }
+.ch-nyangja .band-sh { fill: var(--scarf-sh); opacity: .7; }
+.ch-nyangja .ear-in { fill: var(--ear-in); }
+.ch-nyangja .nose { fill: var(--nose); }
+.ch-nyangja .iris { fill: var(--iris); }
+.ch-nyangja .hl { fill: #fff; }
+.ch-nyangja .whisker { fill: none; stroke: var(--whisker); stroke-width: 1.4; stroke-linecap: round; }
+.ch-nyangja .toe { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; opacity: .45; }
+.ch-nyangja .tube-ink { fill: none; stroke: var(--ink); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
+.ch-nyangja .tube { fill: none; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.ch-nyangja .tube-ink.arm { stroke-width: 12; }
+.ch-nyangja .tube.arm { stroke-width: 6; }
+.ch-nyangja .tube-ink.fing { stroke-width: 4.6; }
+.ch-nyangja .tube.fing { stroke-width: 1.6; }
+.ch-nyangja .fur-s { stroke: var(--fur); }
+.ch-nyangja .light-s { stroke: var(--light); }
+.ch-nyangja .ln.thin { stroke-width: 1.8; }
+.ch-nyangja .ln.lid { stroke-width: 2.2; }
+.ch-nyangja .ln.wink { stroke-width: 2.8; }
+.ch-nyangja .blush { fill: var(--blush); opacity: .75; }
+.ch-nyangja .mouth { fill: var(--mouth); }
+.ch-nyangja .fang { fill: #fff; }
+.ch-nyangja .moon-disc { fill: var(--moon); }
+.ch-nyangja .moon-sh { fill: var(--moon-sh); }
+.ch-nyangja .glint-s { fill: #fff; stroke: var(--ink); stroke-width: 1.2; stroke-linejoin: round; }
+.ch-nyangja .bomb-b { fill: #9C95BC; }
+.ch-nyangja .bomb-band { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; opacity: .55; }
+.ch-nyangja .bomb-hl { fill: #fff; opacity: .7; }
+.ch-nyangja .fuse { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.ch-nyangja .spark { fill: #FFC24A; stroke: var(--ink); stroke-width: 1; stroke-linejoin: round; }
+.ch-nyangja .edge { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; stroke-linecap: butt; }
+.ch-nyangja .shu { fill: var(--steel); }
+.ch-nyangja .shu-hole { fill: var(--ink); }
+/* hidden props + faces outside a .stage (portraitHTML / figureHTML); stage state rules out-rank this */
+.ch-nyangja .face-b, .ch-nyangja .face-c, .ch-nyangja .moon, .ch-nyangja .glint,
+.ch-nyangja .bomb, .ch-nyangja .sign, .ch-nyangja .shuri { opacity: 0; }
+
+/* ---------- effects layer (sibling svg: does not move with the body) ---------- */
+.stage[data-char="nyangja"] .fx .puff-ink { fill: var(--ink); stroke: var(--ink); stroke-width: 4; }
+.stage[data-char="nyangja"] .fx .puff { fill: #ECE7F4; }
+.stage[data-char="nyangja"] .fx .puff-sh { fill: #D3CBE2; }
+.stage[data-char="nyangja"] .fx .peek-eye { fill: #FFE45E; stroke: var(--ink); stroke-width: 2; }
+.alt .stage[data-char="nyangja"] .fx .peek-eye, .stage.alt[data-char="nyangja"] .fx .peek-eye { fill: #5AC8FF; }
+.stage[data-char="nyangja"] .fx .peek-pupil { fill: var(--ink); }
+.stage[data-char="nyangja"] .fx .peek-lid { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
+.stage[data-char="nyangja"] .fx .shu { fill: #D4D9E6; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.stage[data-char="nyangja"] .fx .shu-hole { fill: var(--ink); }
+.stage[data-char="nyangja"] .fx-dizzy { fill: #FFC83D; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
+.stage[data-char="nyangja"] .fx-dizzy .star { transform-box: view-box; transform-origin: 0 0; }
+.stage[data-char="nyangja"] .fx .shu-trail { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; opacity: .9; }
+
+/* =====================================================================================================
+   Sign convention (joint sandwiches): a positive rotate() swings a hanging limb toward screen-left.
+   So armR +150deg = paw up at the chin (the hand sign), armR -160deg = paw raised high on the right;
+   armL/legL outward = +, legR outward = -; earL flattens with -, earR with +; tail tip rises with -;
+   the scarf tail (trailing left) lifts with +; the head ribbon (trailing right) lifts with -.
+   Function lists per keyframe set: rig = translate rotate scale (+opacity) · head = translate rotate ·
+   ears = rotate scale · limbs, tail, scarf, ribbon, spin = rotate · moon = scale · glint = rotate scale ·
+   fx-smoke = translate scale · fx-peek = scale · fx-pupils = translate · fx-shu = translate scale.
+   ===================================================================================================== */
+
+/* ---------- idle: shared composited breathe. fidget (0.8 s): shared blink + ear twitch + tail swish ---------- */
+.stage[data-char="nyangja"].fidget .earR { animation: nyangja-fidget-ear .8s ease-out 1; }
+.stage[data-char="nyangja"].fidget .tail { animation: nyangja-fidget-tail .8s ease-in-out 1; }
+@keyframes nyangja-fidget-ear {
+  0%, 30%, 100% { transform: rotate(0deg) scale(1, 1); }
+  8%            { transform: rotate(16deg) scale(1, .92); }
+  16%           { transform: rotate(-3deg) scale(1, 1.04); }
+  23%           { transform: rotate(11deg) scale(1, .95); }
+}
+@keyframes nyangja-fidget-tail {
+  0%, 100% { transform: rotate(0deg); }
+  30%      { transform: rotate(-14deg); }
+  62%      { transform: rotate(9deg); }
+  84%      { transform: rotate(-3deg); }
+}
+
+/* ---------- my turn (0.6 s): ears perk, hop, a shuriken twirls up in the paw and is tucked away ---------- */
+.stage[data-char="nyangja"][data-state="turn"] .rig { animation: nyangja-turn .6s ease-in-out both, fighter-breathe 2.6s .6s ease-in-out infinite; }
+.stage[data-char="nyangja"][data-state="turn"] .armR  { animation: nyangja-turn-armR .6s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="turn"] .armL  { animation: nyangja-turn-armL .6s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="turn"] .shuri { animation: nyangja-turn-shuri .6s ease-out both; }
+.stage[data-char="nyangja"][data-state="turn"] .earL  { animation: nyangja-turn-earL .6s ease-out both; }
+.stage[data-char="nyangja"][data-state="turn"] .earR  { animation: nyangja-turn-earR .6s ease-out both; }
+.stage[data-char="nyangja"][data-state="turn"] .tail  { animation: nyangja-turn-tail .6s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="turn"] .head  { animation: nyangja-turn-head .6s ease-in-out both; }
+@keyframes nyangja-turn {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  12%  { transform: translate(0%, 0%) rotate(0deg) scale(1.07, .92); animation-timing-function: ease-out; }
+  34%  { transform: translate(0%, -7%) rotate(-3deg) scale(.96, 1.05); animation-timing-function: ease-in-out; }
+  50%  { transform: translate(0%, -7.5%) rotate(-3deg) scale(.98, 1.02); animation-timing-function: ease-in; }
+  66%  { transform: translate(0%, 0%) rotate(0deg) scale(1.06, .94); animation-timing-function: ease-out; }
+  82%  { transform: translate(0%, 0%) rotate(0deg) scale(.98, 1.02); }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+@keyframes nyangja-turn-armR {
+  0%, 100% { transform: rotate(0deg); }
+  14%      { transform: rotate(18deg); }
+  36%, 70% { transform: rotate(-106deg); }
+  86%      { transform: rotate(-20deg); }
+}
+@keyframes nyangja-turn-armL {
+  0%, 100% { transform: rotate(0deg); }
+  36%, 66% { transform: rotate(22deg); }
+}
+@keyframes nyangja-turn-shuri {
+  0%, 26%  { opacity: 0; transform: rotate(0deg) scale(.2); }
+  34%      { opacity: 1; transform: rotate(160deg) scale(1.6); }
+  44%      { opacity: 1; transform: rotate(420deg) scale(1.3); }
+  70%      { opacity: 1; transform: rotate(720deg) scale(1.3); }
+  78%      { opacity: 0; transform: rotate(800deg) scale(.2); }
+  100%     { opacity: 0; transform: rotate(800deg) scale(.2); }
+}
+@keyframes nyangja-turn-earL {
+  0%, 100% { transform: rotate(0deg) scale(1, 1); }
+  12%      { transform: rotate(-8deg) scale(1, .9); }
+  34%, 64% { transform: rotate(5deg) scale(1, 1.14); }
+  80%      { transform: rotate(0deg) scale(1, .97); }
+}
+@keyframes nyangja-turn-earR {
+  0%, 100% { transform: rotate(0deg) scale(1, 1); }
+  12%      { transform: rotate(8deg) scale(1, .9); }
+  34%      { transform: rotate(-5deg) scale(1, 1.14); }
+  48%      { transform: rotate(10deg) scale(1, 1.06); }
+  60%      { transform: rotate(-5deg) scale(1, 1.14); }
+  80%      { transform: rotate(0deg) scale(1, .97); }
+}
+@keyframes nyangja-turn-tail {
+  0%, 100% { transform: rotate(0deg); }
+  20%      { transform: rotate(10deg); }
+  50%      { transform: rotate(-16deg); }
+  80%      { transform: rotate(5deg); }
+}
+@keyframes nyangja-turn-head {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  12%      { transform: translate(0px, 1.5px) rotate(0deg); }
+  40%, 66% { transform: translate(0px, -.5px) rotate(5deg); }
+}
+
+/* ---------- WIN (2.4 s) "연막 → 등장 → 인(印) 포즈": crouch + smoke bomb 0–.24 › POOF .24, vanishes ›
+   eyes peek out of the smoke, two shuriken .50/.70 › smoke clears .80–.92 › drops from the sky with a
+   spin .90–1.10 › lands 1.12 › rises into the hand sign › HIT 1.60: full moon + eye glint + petals ›
+   hold. Loop (1.2 s from 2.4 s): breathe in the pose, ribbons / scarf / tail flutter, a glint twinkle. ---------- */
+.stage[data-char="nyangja"][data-state="win"] .rig {
+  transform-origin: 50% 62%;   /* (60,74.4): body centre, so the drop-spin turns in place; squashes re-plant the feet */
+  animation: nyangja-win 2.4s linear both, nyangja-loop 1.2s 2.4s ease-in-out infinite;
+}
+.stage[data-char="nyangja"][data-state="win"] .armR   { animation: nyangja-win-armR 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .armL   { animation: nyangja-win-armL 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .legL   { animation: nyangja-win-legL 2.4s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="win"] .legR   { animation: nyangja-win-legR 2.4s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="win"] .head   { animation: nyangja-win-head 2.4s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="win"] .earL   { animation: nyangja-win-earL 2.4s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="win"] .earR   { animation: nyangja-win-earR 2.4s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="win"] .tail   { animation: nyangja-win-tail 2.4s ease-in-out both, nyangja-loop-tail 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="nyangja"][data-state="win"] .scarf  { animation: nyangja-win-scarf 2.4s ease-in-out both, nyangja-loop-scarf 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="nyangja"][data-state="win"] .ribbon { animation: nyangja-win-ribbon 2.4s ease-in-out both, nyangja-loop-ribbon 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="nyangja"][data-state="win"] .moon   { animation: nyangja-win-moon 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .glint  { animation: nyangja-win-glint 2.4s linear both, nyangja-loop-glint 1.2s 2.4s ease-out infinite; }
+.stage[data-char="nyangja"][data-state="win"] .bomb   { animation: nyangja-win-bomb 2.4s step-end both; }
+.stage[data-char="nyangja"][data-state="win"] .sign   { animation: nyangja-win-sign 2.4s step-end both; }
+.stage[data-char="nyangja"][data-state="win"] .face-a { animation: nyangja-show-until-hit 2.4s step-end both; }
+.stage[data-char="nyangja"][data-state="win"] .face-b { animation: nyangja-show-from-hit 2.4s step-end both; }
+.stage[data-char="nyangja"][data-state="win"] .face-a .eye { animation: nyangja-win-focus 2.4s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="win"] .fx-smoke  { animation: nyangja-fx-smoke 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .fx-peek   { animation: nyangja-fx-peek 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .fx-pupils { animation: nyangja-fx-pupils 2.4s ease-out both; }
+.stage[data-char="nyangja"][data-state="win"] .fx-shu1   { animation: nyangja-fx-shu1 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .fx-shu2   { animation: nyangja-fx-shu2 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .fx-shu1 .spin { animation: nyangja-fx-spin1 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .fx-shu2 .spin { animation: nyangja-fx-spin2 2.4s linear both; }
+.stage[data-char="nyangja"][data-state="win"] .flash  { animation: nyangja-flash 2.4s ease-out both; }
+.stage[data-char="nyangja"][data-state="win"] .shadow { animation: nyangja-shadow 2.4s ease-in-out both; }
+
+/* body on the composited wrapper. Origin (60,74.4) is 36.6 units above the soles, so a keyframe with
+   scaleY s carries translateY 30.5%·(1−s) to keep the feet on the floor. */
+@keyframes nyangja-win {
+  0%      { opacity: 1; transform: translate(0%, 0%) rotate(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  5%      { opacity: 1; transform: translate(0%, 3%) rotate(5deg) scale(1.08, .9); animation-timing-function: ease-in-out; }   /* .12 crouch, bomb up */
+  7.5%    { opacity: 1; transform: translate(0%, -2.4%) rotate(-3deg) scale(.95, 1.06); animation-timing-function: ease-in; } /* .18 throw */
+  10%     { opacity: 1; transform: translate(0%, 4.9%) rotate(0deg) scale(1.12, .84); animation-timing-function: ease-out; }  /* .24 POOF */
+  12.5%   { opacity: .55; transform: translate(0%, 5%) rotate(0deg) scale(.92, .9); animation-timing-function: ease-in; }
+  15%     { opacity: 0; transform: translate(0%, 7%) rotate(0deg) scale(.8, .8); }                                           /* .36 gone */
+  37.5%   { opacity: 0; transform: translate(0%, -64%) rotate(-330deg) scale(.88, 1.1); animation-timing-function: linear; }  /* .90 drop */
+  39.17%  { opacity: 1; transform: translate(0%, -52%) rotate(-262deg) scale(.9, 1.08); animation-timing-function: linear; }
+  40.83%  { opacity: 1; transform: translate(0%, -40%) rotate(-190deg) scale(.9, 1.08); animation-timing-function: linear; }
+  42.5%   { opacity: 1; transform: translate(0%, -27%) rotate(-116deg) scale(.9, 1.08); animation-timing-function: linear; }
+  44.17%  { opacity: 1; transform: translate(0%, -14%) rotate(-46deg) scale(.92, 1.08); animation-timing-function: ease-out; }
+  45.83%  { opacity: 1; transform: translate(0%, -3.4%) rotate(0deg) scale(.95, 1.07); animation-timing-function: ease-in; }
+  46.67%  { opacity: 1; transform: translate(0%, 5.5%) rotate(0deg) scale(1.17, .82); animation-timing-function: ease-out; } /* 1.12 land */
+  48.33%  { opacity: 1; transform: translate(0%, 4.3%) rotate(2deg) scale(1.12, .86); animation-timing-function: ease-in-out; }
+  52.5%   { opacity: 1; transform: translate(0%, -1.5%) rotate(-4deg) scale(.97, 1.05); animation-timing-function: ease-out; } /* 1.26 rise */
+  56.67%  { opacity: 1; transform: translate(0%, 0%) rotate(-7deg) scale(1, 1); animation-timing-function: ease-in-out; }
+  63.33%  { opacity: 1; transform: translate(0%, 0%) rotate(-6deg) scale(1, 1); animation-timing-function: ease-in; }
+  65.83%  { opacity: 1; transform: translate(0%, 1.2%) rotate(-4deg) scale(1.03, .96); animation-timing-function: ease-out; } /* 1.58 coil */
+  66.67%  { opacity: 1; transform: translate(0%, -2.4%) rotate(-8deg) scale(1.08, 1.08); animation-timing-function: ease-out; } /* 1.60 HIT */
+  69.17%  { opacity: 1; transform: translate(0%, -1.2%) rotate(-6deg) scale(1.04, 1.04); }
+  100%    { opacity: 1; transform: translate(0%, -1.2%) rotate(-6deg) scale(1.04, 1.04); }
+}
+@keyframes nyangja-loop {
+  0%, 100% { transform: translate(0%, -1.2%) rotate(-6deg) scale(1.04, 1.04); }
+  50%      { transform: translate(0%, -.9%) rotate(-6deg) scale(1.05, 1.03); }
+}
+@keyframes nyangja-win-armR {
+  0%      { transform: rotate(0deg); animation-timing-function: ease-out; }
+  4.17%   { transform: rotate(-98deg); animation-timing-function: ease-in-out; }    /* .10 bomb held out */
+  7.5%    { transform: rotate(-150deg); animation-timing-function: ease-in; }       /* .18 wind-up */
+  10%     { transform: rotate(32deg); animation-timing-function: ease-out; }        /* slam */
+  15%     { transform: rotate(14deg); }
+  37.5%, 44.17% { transform: rotate(26deg); animation-timing-function: ease-out; }  /* tucked for the spin */
+  46.67%  { transform: rotate(-78deg); animation-timing-function: ease-in-out; }   /* land: arm out for balance */
+  50%     { transform: rotate(-64deg); animation-timing-function: ease-in-out; }
+  55.83%  { transform: rotate(66deg); animation-timing-function: ease-in-out; }    /* the hand sign comes in */
+  63.33%  { transform: rotate(58deg); animation-timing-function: ease-in; }
+  65.83%  { transform: rotate(50deg); animation-timing-function: ease-out; }
+  66.67%  { transform: rotate(62deg); animation-timing-function: ease-out; }       /* HIT */
+  69.17%, 100% { transform: rotate(58deg); }
+}
+@keyframes nyangja-win-armL {
+  0%      { transform: rotate(0deg); animation-timing-function: ease-out; }
+  5%      { transform: rotate(34deg); animation-timing-function: ease-in-out; }
+  10%     { transform: rotate(8deg); }
+  15%     { transform: rotate(0deg); }
+  37.5%, 44.17% { transform: rotate(-24deg); animation-timing-function: ease-out; }
+  46.67%  { transform: rotate(42deg); animation-timing-function: ease-in-out; }
+  50%     { transform: rotate(36deg); animation-timing-function: ease-in-out; }
+  55%     { transform: rotate(70deg); animation-timing-function: ease-in-out; }
+  63.33%  { transform: rotate(64deg); animation-timing-function: ease-in; }
+  65.83%  { transform: rotate(58deg); animation-timing-function: ease-out; }
+  66.67%  { transform: rotate(74deg); animation-timing-function: ease-out; }
+  69.17%, 100% { transform: rotate(68deg); }
+}
+@keyframes nyangja-win-legL {
+  0%, 15%   { transform: rotate(0deg); }
+  5%, 10%   { transform: rotate(9deg); }
+  37.5%, 44.17% { transform: rotate(-26deg); }
+  46.67%, 48.33% { transform: rotate(20deg); }
+  56.67%, 100% { transform: rotate(10deg); }
+}
+@keyframes nyangja-win-legR {
+  0%, 15%   { transform: rotate(0deg); }
+  5%, 10%   { transform: rotate(-9deg); }
+  37.5%, 44.17% { transform: rotate(26deg); }
+  46.67%, 48.33% { transform: rotate(-20deg); }
+  56.67%, 100% { transform: rotate(-12deg); }
+}
+@keyframes nyangja-win-head {
+  0%, 15%   { transform: translate(0px, 0px) rotate(0deg); }
+  5%        { transform: translate(0px, 0px) rotate(7deg); }
+  10%       { transform: translate(0px, 1.5px) rotate(-3deg); }
+  37.5%, 45.83% { transform: translate(0px, 0px) rotate(0deg); }
+  46.67%    { transform: translate(0px, 2px) rotate(3deg); }
+  52.5%     { transform: translate(0px, 0px) rotate(-2deg); }
+  59.58%    { transform: translate(0px, .8px) rotate(-3deg); }
+  65.83%    { transform: translate(0px, 1px) rotate(-3deg); }
+  66.67%    { transform: translate(0px, -1px) rotate(-8deg); }
+  69.17%, 80% { transform: translate(0px, 0px) rotate(-6deg); }
+  84.17%    { transform: translate(0px, 1.8px) rotate(-2deg); }       /* "흥" */
+  89.17%, 100% { transform: translate(0px, 0px) rotate(-6deg); }
+}
+@keyframes nyangja-win-earL {
+  0%, 100%  { transform: rotate(0deg) scale(1, 1); }
+  5%, 10%   { transform: rotate(-30deg) scale(1, .86); }      /* ears flat for the throw */
+  15%       { transform: rotate(-20deg) scale(1, .9); }
+  37.5%, 45.83% { transform: rotate(8deg) scale(1, 1.1); }    /* streaming in the fall */
+  46.67%    { transform: rotate(-14deg) scale(1, .85); }
+  55%, 65.83% { transform: rotate(0deg) scale(1, 1.04); }
+  66.67%    { transform: rotate(-6deg) scale(1, 1.14); }      /* HIT: perk */
+  70.83%    { transform: rotate(0deg) scale(1, 1.03); }
+}
+@keyframes nyangja-win-earR {
+  0%, 100%  { transform: rotate(0deg) scale(1, 1); }
+  5%, 10%   { transform: rotate(30deg) scale(1, .86); }
+  15%       { transform: rotate(20deg) scale(1, .9); }
+  37.5%, 45.83% { transform: rotate(-8deg) scale(1, 1.1); }
+  46.67%    { transform: rotate(14deg) scale(1, .85); }
+  55%, 65.83% { transform: rotate(0deg) scale(1, 1.04); }
+  66.67%    { transform: rotate(6deg) scale(1, 1.14); }
+  70.83%    { transform: rotate(0deg) scale(1, 1.03); }
+}
+@keyframes nyangja-win-tail {
+  0%        { transform: rotate(0deg); }
+  5%, 10%   { transform: rotate(-20deg); }
+  15%       { transform: rotate(-10deg); }
+  37.5%, 45.83% { transform: rotate(-30deg); }
+  46.67%    { transform: rotate(14deg); }
+  52.5%     { transform: rotate(-6deg); }
+  63.33%    { transform: rotate(-12deg); }
+  66.67%    { transform: rotate(-24deg); }
+  72.5%     { transform: rotate(-10deg); }
+  100%      { transform: rotate(-14deg); }
+}
+@keyframes nyangja-win-scarf {
+  0%        { transform: rotate(0deg); }
+  5%, 10%   { transform: rotate(12deg); }
+  15%       { transform: rotate(4deg); }
+  37.5%, 45.83% { transform: rotate(44deg); }   /* streams up in the fall */
+  46.67%    { transform: rotate(-14deg); }
+  52.5%     { transform: rotate(10deg); }
+  63.33%    { transform: rotate(6deg); }
+  66.67%    { transform: rotate(26deg); }
+  75%       { transform: rotate(12deg); }
+  83.33%    { transform: rotate(20deg); }
+  91.67%    { transform: rotate(10deg); }
+  100%      { transform: rotate(14deg); }
+}
+@keyframes nyangja-win-ribbon {
+  0%        { transform: rotate(0deg); }
+  5%, 10%   { transform: rotate(-14deg); }
+  15%       { transform: rotate(-4deg); }
+  37.5%, 45.83% { transform: rotate(-40deg); }
+  46.67%    { transform: rotate(24deg); }
+  52.5%     { transform: rotate(-6deg); }
+  63.33%    { transform: rotate(-2deg); }
+  66.67%    { transform: rotate(-24deg); }
+  75%       { transform: rotate(-6deg); }
+  83.33%    { transform: rotate(-16deg); }
+  91.67%    { transform: rotate(-6deg); }
+  100%      { transform: rotate(-10deg); }
+}
+@keyframes nyangja-loop-tail {
+  0%, 100% { transform: rotate(-14deg); }
+  50%      { transform: rotate(-4deg); }
+}
+@keyframes nyangja-loop-scarf {
+  0%, 100% { transform: rotate(14deg); }
+  30%      { transform: rotate(22deg); }
+  70%      { transform: rotate(8deg); }
+}
+@keyframes nyangja-loop-ribbon {
+  0%, 100% { transform: rotate(-10deg); }
+  40%      { transform: rotate(-18deg); }
+  75%      { transform: rotate(-2deg); }
+}
+@keyframes nyangja-win-moon {
+  0%, 65.83% { opacity: 0; transform: scale(.25); animation-timing-function: ease-out; }
+  66.67%     { opacity: 1; transform: scale(.7); animation-timing-function: ease-out; }
+  69.17%     { opacity: 1; transform: scale(1.07); animation-timing-function: ease-in-out; }
+  71.67%, 100% { opacity: 1; transform: scale(1); }
+}
+@keyframes nyangja-win-glint {
+  0%, 66.6% { opacity: 0; transform: rotate(0deg) scale(0); animation-timing-function: ease-out; }
+  66.67%    { opacity: 1; transform: rotate(0deg) scale(.3); animation-timing-function: ease-out; }
+  69.17%    { opacity: 1; transform: rotate(60deg) scale(1.7); animation-timing-function: ease-in-out; }
+  73.33%    { opacity: 1; transform: rotate(90deg) scale(1); animation-timing-function: ease-in; }
+  81.67%    { opacity: 0; transform: rotate(135deg) scale(.2); }
+  100%      { opacity: 0; transform: rotate(135deg) scale(.2); }
+}
+@keyframes nyangja-loop-glint {
+  0%, 70%, 100% { opacity: 0; transform: rotate(0deg) scale(.2); }
+  78%           { opacity: 1; transform: rotate(45deg) scale(1.05); }
+  88%           { opacity: 0; transform: rotate(90deg) scale(.2); }
+}
+@keyframes nyangja-win-bomb { 0% { opacity: 0; } 1.5% { opacity: 1; } 9.6%, 100% { opacity: 0; } }
+@keyframes nyangja-win-sign { 0% { opacity: 0; } 53.33%, 100% { opacity: 1; } }
+@keyframes nyangja-win-focus {   /* "…" eyes shut in concentration, then the HIT face snaps them open */
+  0%, 57.5% { transform: scale(1, 1); }
+  59.58%, 100% { transform: scale(1.04, .1); }
+}
+@keyframes nyangja-show-until-hit { 0% { opacity: 1; } 66.67%, 100% { opacity: 0; } }
+@keyframes nyangja-show-from-hit  { 0% { opacity: 0; } 66.67%, 100% { opacity: 1; } }
+/* the smoke bomb cloud: POOF at .24, holds, clears upward .80–.92 */
+@keyframes nyangja-fx-smoke {
+  0%, 9.9% { opacity: 0; transform: translate(0px, 0px) scale(.2); }
+  10%      { opacity: 1; transform: translate(0px, 0px) scale(.4); animation-timing-function: cubic-bezier(.2, .9, .3, 1.2); }
+  13.33%   { opacity: 1; transform: translate(0px, 0px) scale(1.12); animation-timing-function: ease-in-out; }
+  17.5%    { opacity: 1; transform: translate(0px, 0px) scale(1); animation-timing-function: ease-in-out; }
+  20.42%   { opacity: 1; transform: translate(0px, 0px) scale(1.01); animation-timing-function: ease-out; }
+  21.67%   { opacity: 1; transform: translate(0px, 0px) scale(1.07, .97); animation-timing-function: ease-in-out; }  /* .52 throw 1 */
+  24.17%   { opacity: 1; transform: translate(0px, 0px) scale(1.02); animation-timing-function: ease-out; }
+  30%      { opacity: 1; transform: translate(0px, 0px) scale(1.08, .98); animation-timing-function: ease-in-out; }  /* .72 throw 2 */
+  33.33%   { opacity: 1; transform: translate(0px, -2px) scale(1.06); animation-timing-function: ease-in; }
+  38.33%   { opacity: 0; transform: translate(0px, -10px) scale(1.35); }
+  100%     { opacity: 0; transform: translate(0px, -10px) scale(1.35); }
+}
+/* two eyes in the smoke: open .44, squint as each shuriken leaves, look after it, blink out .84 */
+@keyframes nyangja-fx-peek {
+  0%, 17.5% { opacity: 0; transform: scale(1, .1); }
+  17.6%     { opacity: 1; transform: scale(1, .1); }
+  19.17%    { opacity: 1; transform: scale(1, 1); }
+  20.42%    { opacity: 1; transform: scale(1.05, .55); }
+  22.5%     { opacity: 1; transform: scale(1, 1); }
+  28.75%    { opacity: 1; transform: scale(1, 1); }
+  29.58%    { opacity: 1; transform: scale(1.05, .55); }
+  31.67%    { opacity: 1; transform: scale(1, 1); }
+  34.17%    { opacity: 1; transform: scale(1, 1); }
+  35%       { opacity: 1; transform: scale(1, .1); }
+  35.1%, 100% { opacity: 0; transform: scale(1, .1); }
+}
+@keyframes nyangja-fx-pupils {
+  0%, 20.83% { transform: translate(0px, 0px); }
+  22.5%, 27.5% { transform: translate(2.8px, -.6px); }
+  29.17%     { transform: translate(0px, 0px); }
+  30.83%, 100% { transform: translate(-2.8px, -.6px); }
+}
+@keyframes nyangja-fx-shu1 {
+  0%, 20.4% { opacity: 0; transform: translate(0px, 0px) scale(.4); }
+  20.83%    { opacity: 1; transform: translate(0px, 0px) scale(.55); }
+  26.67%    { opacity: 1; transform: translate(131px, -29.7px) scale(1.26); }
+  27.5%, 100% { opacity: 0; transform: translate(150px, -34px) scale(1.35); }
+}
+@keyframes nyangja-fx-shu2 {
+  0%, 28.7% { opacity: 0; transform: translate(0px, 0px) scale(.4); }
+  29.17%    { opacity: 1; transform: translate(0px, 0px) scale(.55); }
+  35%       { opacity: 1; transform: translate(-131px, -19.2px) scale(1.26); }
+  35.83%, 100% { opacity: 0; transform: translate(-150px, -22px) scale(1.35); }
+}
+@keyframes nyangja-fx-spin1 { 0%, 20.83% { transform: rotate(0deg); } 27.5%, 100% { transform: rotate(820deg); } }
+@keyframes nyangja-fx-spin2 { 0%, 29.17% { transform: rotate(0deg); } 35.83%, 100% { transform: rotate(-820deg); } }
+@keyframes nyangja-flash {
+  0%, 66.6% { opacity: 0; transform: scale(.4); }
+  67.3%     { opacity: .95; transform: scale(.95); }
+  74%, 100% { opacity: 0; transform: scale(1.35); }
+}
+@keyframes nyangja-shadow {
+  0%, 100% { opacity: 1; transform: scale(1, 1); }
+  5%       { opacity: 1; transform: scale(1.1, 1); }
+  10%      { opacity: 1; transform: scale(1.2, 1); }
+  15%      { opacity: .25; transform: scale(.6, .8); }
+  37.5%    { opacity: .2; transform: scale(.35, .6); }
+  45.83%   { opacity: .8; transform: scale(.9, 1); }
+  46.67%   { opacity: 1; transform: scale(1.25, 1); }
+  52.5%    { opacity: 1; transform: scale(1, 1); }
+}
+
+/* ---------- LOSE (1.0 s + sway loop): the smoke bomb fizzles "pfft", smoke up the nose, a sneeze,
+   ears flat, scarf and ribbons droop, "> <" eyes, dizzy stars ---------- */
+.stage[data-char="nyangja"][data-state="lose"] .rig    { animation: nyangja-lose 1s ease-in-out both, fighter-sway 2.4s 1s ease-in-out infinite; }
+.stage[data-char="nyangja"][data-state="lose"] .armR   { animation: nyangja-lose-armR 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .armL   { animation: nyangja-lose-armL 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .bomb   { animation: nyangja-lose-bomb 1s step-end both; }
+.stage[data-char="nyangja"][data-state="lose"] .head   { animation: nyangja-lose-head 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .earL   { animation: nyangja-lose-earL 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .earR   { animation: nyangja-lose-earR 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .tail   { animation: nyangja-lose-tail 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .scarf  { animation: nyangja-lose-scarf 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .ribbon { animation: nyangja-lose-ribbon 1s ease-in-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .fx-fizzle { animation: nyangja-lose-fizzle 1s ease-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .fx-dizzy  { animation: nyangja-on .3s .62s ease-out both; }
+.stage[data-char="nyangja"][data-state="lose"] .face-a { animation: nyangja-off .46s step-end both; }
+.stage[data-char="nyangja"][data-state="lose"] .face-c { animation: nyangja-on .46s step-end both; }
+@keyframes nyangja-lose {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  16%  { transform: translate(0%, -2%) rotate(3deg) scale(.95, 1.06); }        /* bomb up */
+  28%  { transform: translate(0%, 0%) rotate(-2deg) scale(1.06, .93); }        /* throw… pfft */
+  40%  { transform: translate(0%, -1%) rotate(-6deg) scale(.97, 1.04); }       /* "흡…" */
+  48%  { transform: translate(0%, .5%) rotate(7deg) scale(1.08, .9); }          /* "에취!" */
+  60%  { transform: translate(0%, 0%) rotate(-1deg) scale(1, 1); }
+  80%  { transform: translate(0%, 1.4%) rotate(-4deg) scale(1.05, .93); }
+  100% { transform: translate(0%, 1%) rotate(-3deg) scale(1.03, .95); }         /* = fighter-sway 0% */
+}
+@keyframes nyangja-lose-armR {
+  0%   { transform: rotate(0deg); }
+  16%  { transform: rotate(-122deg); }
+  28%  { transform: rotate(26deg); }
+  40%  { transform: rotate(150deg); }      /* paw to the nose */
+  48%  { transform: rotate(40deg); }
+  70%, 100% { transform: rotate(8deg); }
+}
+@keyframes nyangja-lose-armL {
+  0%   { transform: rotate(0deg); }
+  16%  { transform: rotate(20deg); }
+  48%  { transform: rotate(30deg); }
+  70%, 100% { transform: rotate(-8deg); }
+}
+@keyframes nyangja-lose-bomb { 0% { opacity: 0; } 5% { opacity: 1; } 27%, 100% { opacity: 0; } }
+@keyframes nyangja-lose-head {
+  0%, 28% { transform: translate(0px, 0px) rotate(0deg); }
+  40%     { transform: translate(0px, -1px) rotate(-9deg); }
+  48%     { transform: translate(0px, 2.5px) rotate(10deg); }
+  62%     { transform: translate(0px, 1px) rotate(-2deg); }
+  100%    { transform: translate(0px, 2px) rotate(4deg); }
+}
+@keyframes nyangja-lose-earL {
+  0%, 28% { transform: rotate(0deg) scale(1, 1); }
+  40%     { transform: rotate(6deg) scale(1, 1.08); }
+  48%     { transform: rotate(-30deg) scale(1, .85); }
+  62%     { transform: rotate(-44deg) scale(1, .82); }
+  100%    { transform: rotate(-52deg) scale(1, .8); }
+}
+@keyframes nyangja-lose-earR {
+  0%, 28% { transform: rotate(0deg) scale(1, 1); }
+  40%     { transform: rotate(-6deg) scale(1, 1.08); }
+  48%     { transform: rotate(30deg) scale(1, .85); }
+  62%     { transform: rotate(44deg) scale(1, .82); }
+  100%    { transform: rotate(52deg) scale(1, .8); }
+}
+@keyframes nyangja-lose-tail {
+  0%      { transform: rotate(0deg); }
+  28%     { transform: rotate(-12deg); }
+  48%     { transform: rotate(-22deg); }
+  100%    { transform: rotate(40deg); }
+}
+@keyframes nyangja-lose-scarf {
+  0%      { transform: rotate(0deg); }
+  48%     { transform: rotate(14deg); }
+  100%    { transform: rotate(-34deg); }
+}
+@keyframes nyangja-lose-ribbon {
+  0%      { transform: rotate(0deg); }
+  48%     { transform: rotate(-20deg); }
+  100%    { transform: rotate(52deg); }
+}
+@keyframes nyangja-lose-fizzle {
+  0%, 27%  { opacity: 0; transform: translate(0px, 0px) scale(.2); }
+  32%      { opacity: 1; transform: translate(0px, 0px) scale(1); }
+  70%      { opacity: .8; transform: translate(-1px, -8px) scale(.9); }
+  90%, 100% { opacity: 0; transform: translate(-2px, -14px) scale(.6); }
+}
+@keyframes nyangja-on  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nyangja-off { from { opacity: 1; } to { opacity: 0; } }
+
+/* ---------- reduced motion: the HIT pose itself is the static victory pose ---------- */
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .rig    { transform-origin: 50% 62%; transform: translate(0%, -1.2%) rotate(-6deg) scale(1.04, 1.04); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .armR   { transform: rotate(58deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .armL   { transform: rotate(68deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .legL   { transform: rotate(10deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .legR   { transform: rotate(-12deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .head   { transform: translate(0px, 0px) rotate(-6deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .tail   { transform: rotate(-14deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .scarf  { transform: rotate(14deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .ribbon { transform: rotate(-10deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .sign   { opacity: 1; }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .moon   { opacity: 1; animation: fighter-rm-fade .4s ease-out both !important; }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="win"] .glint  { opacity: 1; transform: rotate(45deg) scale(1); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="lose"] .earL  { transform: rotate(-52deg) scale(1, .8); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="lose"] .earR  { transform: rotate(52deg) scale(1, .8); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="lose"] .scarf { transform: rotate(-34deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="lose"] .ribbon { transform: rotate(52deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="lose"] .tail  { transform: rotate(40deg); }
+[data-motion="reduce"] .stage[data-char="nyangja"][data-state="lose"] .head  { transform: translate(0px, 2px) rotate(4deg); }

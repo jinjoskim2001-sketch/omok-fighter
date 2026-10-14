@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>돌주먹 · fighter lab</title>
+<!--
+  Fighter gallery + test bench (dev tool, not cached by the SW).
+    tools/demo-fighters.html                         all 8: state buttons, real particles + sound, cue log
+    ?sheet=<id>[&t=0.1,0.3,…][&alt=1][&rm=1]         frozen contact sheet of one character
+    ?id=<id>&state=<s>[&t=<sec>][&size=<px>][&alt=1][&rm=1][&portrait=1]   one deterministic frame
+    &bg=light|dark (default dark)   &mockaudio=1 (log audio calls to window.__audioLog instead of playing)
+  document.title becomes "ready" when a sheet/frame is frozen and painted (for tools/shot scripts).
+  Missing js/chars/<id>.js (or js/audio.js) are swapped for placeholders through an import map, so the
+  page works while the roster is still being written.
+-->
+<link rel="stylesheet" href="../css/fighters.css">
+<style>
+:root { --bg: #17121F; --bg2: #221A2E; --bg3: #2E2440; --line: #3B2F4F; --text: #FFF4DE; --dim: #BBAFCF;
+  --gold: #FFD23F; --p1: #FF4757; --p2: #2E9BFF; --ink: #2A1E2F; --cell: #2A2138; }
+:root[data-bg="light"] { --bg: #F4EEDF; --bg2: #E9DFC8; --bg3: #DED2B6; --line: #CDBF9F; --text: #2A1E2F; --dim: #6B5E78; --cell: #EFE6D2; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.4 -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif; word-break: keep-all; }
+header { position: sticky; top: 0; z-index: 70; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 10px 12px; background: var(--bg2); border-bottom: 3px solid var(--ink); }
+header h1 { font-size: 16px; margin: 0 8px 0 0; letter-spacing: -.02em; }
+button, .tog { font: inherit; font-size: 13px; font-weight: 700; color: var(--text); background: var(--bg3);
+  border: 2px solid var(--ink); border-radius: 10px; padding: 6px 10px; min-height: 36px; cursor: pointer;
+  box-shadow: 0 3px 0 var(--ink); }
+button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+button.on, .tog.on { background: var(--gold); color: var(--ink); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; padding: 12px; }
+.card { background: var(--bg2); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 4px 0 var(--ink);
+  padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.card.missing { opacity: .8; border-style: dashed; }
+.card h2 { margin: 0; font-size: 16px; display: flex; gap: 6px; align-items: baseline; }
+.card h2 small { color: var(--dim); font-weight: 500; font-size: 12px; }
+.card .badge { margin-left: auto; font-size: 11px; padding: 2px 6px; border-radius: 6px; background: #3FE0B5; color: var(--ink); }
+.card.missing .badge { background: var(--dim); }
+.card.nocss .badge { background: #FF8A3D; }
+.stagebox { display: flex; justify-content: center; align-items: flex-end; padding: 22px 0 6px;
+  background: var(--cell); border-radius: 12px; min-height: 230px; position: relative; }
+.stagebox .state { position: absolute; top: 6px; left: 8px; font-size: 11px; color: var(--dim); }
+.minis { display: flex; gap: 8px; align-items: center; }
+.minis .p48 { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: var(--bg3); border: 2px solid var(--ink); }
+.minis .f64 { width: 64px; }
+.minis span { font-size: 11px; color: var(--dim); }
+.btns { display: flex; flex-wrap: wrap; gap: 5px; }
+.btns button { padding: 4px 8px; min-height: 32px; font-size: 12px; }
+#log { position: fixed; right: 8px; bottom: 8px; z-index: 80; width: min(360px, calc(100vw - 16px)); max-height: 38vh;
+  overflow: auto; background: rgba(23, 18, 31, .94); color: #FFF4DE; border: 2px solid var(--ink); border-radius: 12px;
+  font: 11px/1.45 ui-monospace, Menlo, monospace; padding: 8px; white-space: pre-wrap; }
+#log:empty { display: none; }
+/* contact sheet */
+.sheet { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; align-items: flex-start; }
+.sheet .cell { display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--cell);
+  border-radius: 8px; padding: 46px 4px 4px; font: 11px system-ui, sans-serif; color: var(--dim); }
+.sheet .cell > div:last-child { position: relative; z-index: 1; background: var(--cell); border-radius: 6px; padding: 0 5px; }
+.sheet .cell .stage { margin: 0 6px; }
+
+.sheet .cell .fig-portrait { border-radius: 50%; overflow: hidden; background: var(--bg3); outline: 2px solid var(--ink); }
+.single { padding: 40px; display: inline-flex; background: var(--cell); }
+</style>
+<script>
+// Boot: find which modules exist, map the missing ones to placeholders, then start the page module.
+(async () => {
+  const ROSTER = [['bulttong', '불똥', 'Bulttong', '#F0483E'], ['nyangja', '냥자', 'Nyangja', '#2D2B52'],
+    ['bigom', '비곰', 'Bigom', '#2F6BFF'], ['beonjjeok', '번쩍', 'Beonjjeok', '#F2A54A'], ['jaepjaep', '잽잽', 'Jaepjaep', '#FFC9DA'],
+    ['ppibik', '삐빅', 'Ppibik', '#A9B8CC'], ['kkakkung', '까꿍', 'Kkakkung', '#F1ECFF'], ['taenggeul', '탱글', 'Taenggeul', '#FFD45E']];
+  const q = new URLSearchParams(location.search);
+  document.documentElement.dataset.bg = q.get('bg') === 'light' ? 'light' : 'dark';
+  const abs = p => new URL(p, location.href).href;
+  // Prefer the dev server's directory listing (no 404 noise in the console); HEAD-probe otherwise.
+  const listings = new Map();
+  const listing = dir => {
+    if (!listings.has(dir)) listings.set(dir, fetch(abs(dir), { cache: 'no-store' }).then(async r => {
+      if (!r.ok || !(r.headers.get('content-type') || '').includes('html')) return null;
+      const names = [...(await r.text()).matchAll(/href="([^"?#]+)"/g)].map(m => decodeURIComponent(m[1]));
+      return names.length ? new Set(names) : null;
+    }).catch(() => null));
+    return listings.get(dir);
+  };
+  const exists = async p => {
+    const i = p.lastIndexOf('/') + 1;
+    const names = await listing(p.slice(0, i));
+    if (names) return names.has(p.slice(i));
+    try { return (await fetch(abs(p), { method: 'HEAD', cache: 'no-store' })).ok; } catch { return false; }
+  };
+  const [chars, css, hasAudio] = await Promise.all([
+    Promise.all(ROSTER.map(([id]) => exists(`../js/chars/${id}.js`))),
+    Promise.all(ROSTER.map(([id]) => exists(`../css/chars/${id}.css`))),
+    exists('../js/audio.js'),
+  ]);
+  const imports = {};
+  const missing = [];
+  const blob = src => URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+  ROSTER.forEach(([id, ko, en, color], i) => {
+    if (chars[i]) return;
+    missing.push(id);
+    imports[abs(`../js/chars/${id}.js`)] = blob(placeholder(id, ko, en, color));
+  });
+  if (!hasAudio || q.get('mockaudio') === '1') imports[abs('../js/audio.js')] = blob(`const log = (...a) => (globalThis.__audioLog ||= []).push(a);
+export const audio = { init() {}, unlock() {}, play(n, o) { log('play', n); }, jingle(s, o = {}) { log('jingle', o.delay); return { stop() { log('stop'); } }; },
+  stopAll() {}, setEnabled() {}, isEnabled() { return false; }, setVolume() {}, setIgnoreSilent() {} };
+export const SFX_NAMES = []; export const CHAR_SFX = [];`);
+  window.__demo = { missing, hasAudio: hasAudio && q.get('mockaudio') !== '1', cssPresent: ROSTER.filter((_, i) => css[i]).map(r => r[0]) };
+  const map = document.createElement('script');
+  map.type = 'importmap';
+  map.textContent = JSON.stringify({ imports });
+  document.head.append(map);
+  await Promise.all(ROSTER.map(([id], i) => css[i] && new Promise(res => {
+    const l = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: `../css/chars/${id}.css` });
+    l.onload = l.onerror = res;
+    document.head.append(l);
+  })));
+  const main = document.createElement('script');
+  main.type = 'module';
+  main.textContent = document.getElementById('main').textContent;
+  document.body.append(main);
+
+  function placeholder(id, ko, en, color) {
+    // a neutral "coming soon" blob that follows the rig contract (parts in joint sandwiches, 3 faces)
+    const svg = `<svg class="ch ch-${id}" viewBox="0 0 120 120" role="img" aria-label="${ko}">
+<g transform="translate(46 80)"><g class="p armL"><g transform="translate(-46 -80)"><rect class="o" fill="#B9B0C6" x="36" y="76" width="10" height="17" rx="5"/></g></g></g>
+<g transform="translate(74 80)"><g class="p armR"><g transform="translate(-74 -80)"><rect class="o" fill="#B9B0C6" x="74" y="76" width="10" height="17" rx="5"/></g></g></g>
+<ellipse class="o" fill="#D9D3E2" cx="60" cy="88" rx="20" ry="20"/>
+<ellipse class="o" fill="#D9D3E2" cx="60" cy="50" rx="27" ry="24"/>
+<text x="60" y="97" text-anchor="middle" font-size="22" font-weight="900" fill="${color}" stroke="var(--ink)" stroke-width="1.6" paint-order="stroke" font-family="system-ui,sans-serif">?</text>
+<g class="face-a"><ellipse class="eye ink" cx="50" cy="50" rx="3.2" ry="4"/><ellipse class="eye ink" cx="70" cy="50" rx="3.2" ry="4"/><path class="ln" d="M55 62q5 3 10 0"/></g>
+<g class="face-b"><path class="ln" d="M46 52q4-5 8 0M66 52q4-5 8 0"/><path d="M53 60q7 9 14 0Z" fill="#6B2335" stroke="var(--ink)" stroke-width="2"/></g>
+<g class="face-c"><path class="ln" d="M47 47l6 6M53 47l-6 6M67 47l6 6M73 47l-6 6M54 64q6-4 12 0"/></g>
+</svg>`;
+    const fx = `<svg class="fx" viewBox="0 0 120 120" aria-hidden="true"><g class="fx-dizzy" transform="translate(60 14)" fill="#FFC83D" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round">${
+      '<path class="star" d="M0-5l1.5 3.2 3.5.4-2.6 2.4.7 3.5L0 2.8l-3.1 1.7.7-3.5-2.6-2.4 3.5-.4Z"/>'.repeat(3)}</g></svg>`;
+    const data = { id, ko, en, tagline: '준비 중', type: '?', color, colorAlt: '#888888', bg: ['#2E2440', '#17121F'],
+      winMs: 2400, hitAt: 1.56, excerptFrom: 1.26,
+      quote: { win: '곧 만나요!', winEn: 'Coming soon!', lose: '…' },
+      anchors: { head: [60, 26], center: [60, 63], feet: [60, 110], sky: [60, -15] },
+      cues: [{ t: 0.19, sfx: 'POP' }, { t: 1.56, fx: 'sparkle', at: 'head', shake: 100 }, { t: 1.82, fx: 'dust', at: 'feet' }],
+      jingle: { at: 1.56, voices: [{ wave: 'triangle', gain: 0.07, notes: 'C5:90 E5:90 G5:90 C6~:300' }] },
+      portrait: '28 20 64 64', svg, fx, placeholder: true };
+    return 'export default ' + JSON.stringify(data) + ';';
+  }
+})();
+</script>
+</head>
+<body>
+<script type="text/plain" id="main">
+import { createFighter, portraitHTML, figureHTML } from '../js/fighter.js';
+import { CHARACTERS } from '../js/characters.js';
+import { audio } from '../js/audio.js';
+import { release } from '../js/particles.js';
+
+const q = new URLSearchParams(location.search);
+const html = document.documentElement;
+const { missing, hasAudio, cssPresent } = window.__demo;
+const log = [];
+window.__demo.log = log;
+window.__demo.fighters = {};
+const twoFrames = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+const el = (tag, props = {}, ...kids) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e; };
+if (q.get('rm') === '1') html.dataset.motion = 'reduce';
+
+if (q.has('sheet')) await sheet(q.get('sheet'));
+else if (q.has('id')) await single();
+else gallery();
+
+// ------------------------------------------------------------------ frozen contact sheet
+async function sheet(id) {
+  const c = CHARACTERS.find(x => x.id === id);
+  if (!c) { document.body.textContent = `unknown id ${id}`; return; }
+  const size = +(q.get('size') || 150);
+  const alt = q.get('alt') === '1';
+  const ts = q.has('t') ? q.get('t').split(',').map(Number).filter(Number.isFinite)
+    : [...new Set([0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.7, 1.9, 2.1, 2.3, 2.4, 2.8, c.excerptFrom, c.hitAt].map(t => +t.toFixed(2)))].sort((a, b) => a - b);
+  const wrap = el('div', { className: 'sheet' });
+  document.body.append(el('header', {}, el('h1', { textContent: `${c.ko} ${c.en} — contact sheet${alt ? ' (alt)' : ''}` }),
+    el('span', { textContent: `hitAt ${c.hitAt}s · excerpt ${c.excerptFrom}s · cues ${c.cues.map(x => x.t).join(', ')}` })), wrap);
+  const cells = [];
+  const add = (label, state, t, opts = {}) => {
+    const box = el('div', { className: 'cell' });
+    let host = box;
+    if (opts.rm) { host = el('div', {}); host.dataset.motion = 'reduce'; box.append(host); }
+    const f = createFighter(id, { alt: opts.alt ?? alt, size: opts.size || size, dir: opts.dir || 1 });
+    host.append(f.el);
+    box.append(el('div', { textContent: label }));
+    wrap.append(box);
+    cells.push([f, state, t]);
+  };
+  add('idle', 'idle', 0);
+  add('idle 1.3s', 'idle', 1.3);
+  for (const t of [0.15, 0.3, 0.45]) add(`turn ${t}s`, 'turn', t);
+  add('attack .1s', 'attack', 0.1);
+  add('attack .1s dir-1', 'attack', 0.1, { dir: -1 });
+  add('hit .07s', 'hit', 0.07);
+  for (const t of ts) add(`win ${t.toFixed(2)}s${Math.abs(t - c.hitAt) < 0.005 ? ' HIT' : Math.abs(t - c.excerptFrom) < 0.005 ? ' excerpt' : ''}`, 'win', t);
+  for (const t of [0.25, 0.6, 1.0, 1.6]) add(`lose ${t}s`, 'lose', t);
+  add('alt idle', 'idle', 0, { alt: !alt });
+  add(`alt win ${(c.hitAt + 0.1).toFixed(2)}s`, 'win', c.hitAt + 0.1, { alt: !alt });
+  add('reduced win', 'win', 0, { rm: true });
+  add('reduced lose', 'lose', 0, { rm: true });
+  add('48 idle', 'idle', 0, { size: 48 });
+  add('48 win', 'win', 2.4, { size: 48 });
+  add('48 lose', 'lose', 1.6, { size: 48 });
+  for (const [label, markup, sz] of [['portrait 52', portraitHTML(id, { alt }), 52], ['portrait 32', portraitHTML(id, { alt }), 32],
+    ['figure 64', figureHTML(id, { alt }), 64], ['figure alt', figureHTML(id, { alt: !alt }), 64]]) {
+    const box = el('div', { className: 'cell' });
+    box.innerHTML = markup;
+    box.firstElementChild.style.setProperty('--fig-size', sz + 'px');
+    box.append(el('div', { textContent: label }));
+    wrap.append(box);
+  }
+  await document.fonts?.ready;
+  await twoFrames();
+  for (const [f, state, t] of cells) f.pose(state, t);
+  await twoFrames();
+  document.title = 'ready';
+}
+
+// ------------------------------------------------------------------ one deterministic frame
+async function single() {
+  const id = q.get('id');
+  const size = +(q.get('size') || 220);
+  const alt = q.get('alt') === '1';
+  const box = el('div', { className: 'single' });
+  document.body.append(box);
+  if (q.get('portrait') === '1') {
+    box.innerHTML = portraitHTML(id, { alt });
+    box.firstElementChild.style.setProperty('--fig-size', size + 'px');
+  } else {
+    const f = createFighter(id, { alt, size, dir: q.get('dir') === '-1' ? -1 : 1 });
+    window.__demo.fighters[id] = f;
+    box.append(f.el);
+    await document.fonts?.ready;
+    await twoFrames();
+    const state = q.get('state') || 'idle';
+    if (q.has('t')) f.pose(state, +q.get('t'));
+    else if (state === 'win') f.win({ onCue: (cue, t) => log.push({ id, t: +t.toFixed(3), ...cue }) });
+    else f.set(state);
+  }
+  await twoFrames();
+  document.title = 'ready';
+}
+
+// ------------------------------------------------------------------ interactive gallery
+function gallery() {
+  const logBox = el('pre', { id: 'log' });
+  const write = line => { log.push(line); logBox.textContent = [...log.slice(-60)].reverse().map(x => typeof x === 'string' ? x : JSON.stringify(x)).join('\n'); };
+  let unlocked = false;
+  const unlock = () => {
+    if (unlocked) return;
+    unlocked = true;
+    try { audio.init?.({ sound: true, volume: 0.8, ignoreSilent: false }); } catch (e) { write('audio.init: ' + e.message); }
+    try { audio.unlock?.(); } catch (e) { write('audio.unlock: ' + e.message); }
+  };
+  addEventListener('pointerdown', unlock, { capture: true });
+
+  const rmBtn = el('button', { textContent: '모션 줄이기', title: 'html[data-motion="reduce"]' });
+  rmBtn.onclick = () => { const on = html.dataset.motion !== 'reduce'; if (on) html.dataset.motion = 'reduce'; else delete html.dataset.motion; rmBtn.classList.toggle('on', on); };
+  const sndBtn = el('button', { textContent: '소리', className: 'on' });
+  let sound = true;
+  sndBtn.onclick = () => { sound = !sound; sndBtn.classList.toggle('on', sound); try { audio.setEnabled?.(sound); } catch {} };
+  const bgBtn = el('button', { textContent: '밝은 배경' });
+  bgBtn.onclick = () => { const light = html.dataset.bg !== 'light'; html.dataset.bg = light ? 'light' : 'dark'; bgBtn.classList.toggle('on', light); };
+  const allWin = el('button', { textContent: '전원 승리' });
+  allWin.onclick = () => Object.values(window.__demo.fighters).forEach((f, i) => setTimeout(() => f.win({ sound: i === 0 }), i * 120));
+  const allIdle = el('button', { textContent: '전원 대기' });
+  allIdle.onclick = () => Object.values(window.__demo.fighters).forEach(f => f.set('idle'));
+  const clr = el('button', { textContent: '로그 지우기' });
+  clr.onclick = () => { log.length = 0; logBox.textContent = ''; release(); };
+  const status = el('span', { textContent: `${8 - missing.length}/8 캐릭터 · 오디오 ${hasAudio ? 'OK' : '없음(무음 대체)'}`, style: 'font-size:12px;color:var(--dim)' });
+  document.body.append(el('header', {}, el('h1', { textContent: '돌주먹 · 파이터 랩' }), rmBtn, sndBtn, bgBtn, allWin, allIdle, clr, status));
+  const grid = el('main', { className: 'grid' });
+  document.body.append(grid, logBox);
+
+  for (const c of CHARACTERS) {
+    const isMissing = missing.includes(c.id);
+    const card = el('section', { className: 'card' + (isMissing ? ' missing' : cssPresent.includes(c.id) ? '' : ' nocss') });
+    let alt = false;
+    let f = createFighter(c.id, { size: 190 });
+    window.__demo.fighters[c.id] = f;
+    const stateTag = el('span', { className: 'state', textContent: 'idle' });
+    const box = el('div', { className: 'stagebox' }, stateTag, f.el);
+    const minis = el('div', { className: 'minis' });
+    const paintMinis = () => {
+      minis.innerHTML = `<div class="p48">${portraitHTML(c.id, { alt })}</div><div class="f64">${figureHTML(c.id, { alt })}</div>` +
+        `<span>${c.tagline} · ${c.type}<br>“${c.quote.win}”</span>`;
+    };
+    paintMinis();
+    const shake = ms => card.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(-6px,2px)' }, { transform: 'translate(5px,-2px)' },
+      { transform: 'translate(-3px,1px)' }, { transform: 'translate(0,0)' }], { duration: ms, easing: 'ease-out' });
+    const show = s => { stateTag.textContent = s; };
+    const t0 = { v: 0 };
+    const doWin = excerpt => {
+      t0.v = performance.now();
+      show(excerpt ? 'win (excerpt)' : 'win');
+      write(`${c.id} ▶ win${excerpt ? ' excerpt from ' + c.excerptFrom : ''}`);
+      f.win({ excerpt, sound,
+        onShake: ms => { write(`${c.id}  shake ${ms}ms`); shake(ms); },
+        onHit: () => write(`${c.id}  HIT @${((performance.now() - t0.v) / 1000).toFixed(3)}s wall`),
+        onCue: (cue, t) => write(`${c.id}  t=${t.toFixed(3)} ${JSON.stringify(cue)}`),
+      }).then(() => { write(`${c.id} ■ win done (${((performance.now() - t0.v) / 1000).toFixed(3)}s wall)`); show('win (loop)'); });
+    };
+    const btn = (label, fn) => { const b = el('button', { textContent: label }); b.onclick = fn; return b; };
+    const btns = el('div', { className: 'btns' },
+      btn('idle', () => { f.set('idle'); show('idle'); }),
+      btn('turn', () => { f.set('turn', { sound }); show('turn'); setTimeout(() => show(f.state), 900); }),
+      btn('attack', () => { f.set('attack'); show('attack'); setTimeout(() => show(f.state), 500); }),
+      btn('hit', () => { f.set('hit'); show('hit'); setTimeout(() => show(f.state), 500); }),
+      btn('win', () => doWin(false)),
+      btn('excerpt', () => doWin(true)),
+      btn('skip', () => { f.skip(); write(`${c.id} ⏭ skip`); }),
+      btn('lose', () => { f.set('lose'); show('lose'); }),
+      btn('alt', () => { alt = !alt; f.setAlt(alt); paintMinis(); }),
+      btn('dir', () => { f.el.style.setProperty('--dir', f.el.style.getPropertyValue('--dir') === '-1' ? '1' : '-1'); }),
+    );
+    card.append(el('h2', {}, c.ko, el('small', { textContent: `${c.en} · ${c.id}` }), el('span', { className: 'badge', textContent: isMissing ? '자리표시' : cssPresent.includes(c.id) ? '완성' : 'CSS 없음' })),
+      box, minis, btns);
+    grid.append(card);
+  }
+  document.title = 'ready';
+}
+</script>
+</body>
+</html>

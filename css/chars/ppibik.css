@@ -1,0 +1,528 @@
+/* css/chars/ppibik.css — 삐빅 Ppibik, the tin-toy robot. Builds on css/fighters.css (SPEC §8.5).
+   Parts (joint sandwiches): legL legR · needle (chest dial) · spring · armL armR · head > hspin > antenna.
+   Faces: face-a (LED eyes, .gaze) · face-w (surprised, 1.20–1.40 of the win) · face-b (hearts) · face-c (✕✕, .glitch).
+   Win timeline 2.4 s (HIT 1.40 = 58.333%), then a 1.2 s loop starting at 2.4 s.
+   Percent ↔ seconds: 10.417%=.25 18.75%=.45 27.083%=.65 35.417%=.85 41.667%=1.0 50%=1.2 58.333%=1.4
+   64.583%=1.55 70.833%=1.7 77.083%=1.85 83.333%=2.0 87.5%=2.1 */
+
+/* ===================== palette P1 (steel + lime LEDs) + alt (gold + cyan LEDs) ===================== */
+.ch-ppibik {
+  --metal: #A9B8CC; --metal-sh: #7F8EA6; --metal-lt: #D8E1EC;
+  --visor: #1F2A44; --led: #B6FF4D; --bulb: #FF4FA3; --bolt: #FF8A3D;
+  --heart: #FF4FA3; --blush: #FF7FB0; --err: #FF5A4F; --dial: #FFFFFF;
+}
+.alt .ch-ppibik, .ch-ppibik.alt {
+  --metal: #F2C14E; --metal-sh: #C9962B; --metal-lt: #FFE6A3;
+  --led: #3CE0FF; --bolt: #F0584A; --blush: #FF9FB8;
+}
+.stage[data-char="ppibik"] .fx { --fx-led: #B6FF4D; }
+.stage.alt[data-char="ppibik"] .fx, .alt .stage[data-char="ppibik"] .fx { --fx-led: #3CE0FF; }
+
+.ch-ppibik .metal    { fill: var(--metal); }
+.ch-ppibik .metal-sh { fill: var(--metal-sh); }
+.ch-ppibik .metal-lt { fill: var(--metal-lt); }
+.ch-ppibik .visor    { fill: var(--visor); }
+.ch-ppibik .led      { fill: var(--led); }
+.ch-ppibik .halo     { fill: var(--led); opacity: .2; }
+.ch-ppibik .face-b .halo { fill: var(--heart); opacity: .28; }
+.ch-ppibik .heart    { fill: var(--heart); }
+.ch-ppibik .blush    { fill: var(--blush); opacity: .9; }
+.ch-ppibik .bulb     { fill: var(--bulb); }
+.ch-ppibik .glow     { fill: var(--bulb); opacity: 0; }
+.ch-ppibik .bulb-off { fill: var(--ink); opacity: 0; }
+.ch-ppibik .bolt     { fill: var(--bolt); }
+.ch-ppibik .dial     { fill: var(--dial); }
+.ch-ppibik .rivet    { fill: var(--metal-sh); }
+.ch-ppibik .hl       { fill: #fff; opacity: .85; }
+.ch-ppibik .led1     { fill: var(--led); }
+.ch-ppibik .led2     { fill: var(--bulb); }
+.ch-ppibik .led3     { fill: var(--bolt); }
+.ch-ppibik .led-ln   { fill: none; stroke: var(--led); stroke-width: 2.2; stroke-linecap: round; }
+.ch-ppibik .led-ring { fill: none; stroke: var(--led); stroke-width: 2.6; }
+.ch-ppibik .led-ring.sm { stroke-width: 2; }
+.ch-ppibik .err-ln   { fill: none; stroke: var(--err); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.ch-ppibik .err-ln.sm { stroke-width: 2; }
+.ch-ppibik .scan     { fill: none; stroke: var(--err); stroke-width: 1.1; opacity: .3; }
+.ch-ppibik .shine    { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; opacity: .6; }
+.ch-ppibik .shine.sm { stroke-width: 1.6; opacity: .45; }
+.ch-ppibik .glint    { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; opacity: .4; }
+.ch-ppibik .seam     { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; opacity: .35; }
+.ch-ppibik .grille   { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; opacity: .45; }
+.ch-ppibik .needle-ln { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; }
+.ch-ppibik .tube-ink, .ch-ppibik .coil-ink { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.ch-ppibik .tube, .ch-ppibik .coil { fill: none; stroke: var(--metal-lt); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ch-ppibik .coil { stroke-width: 2.2; }
+.ch-ppibik .sig      { opacity: 0; }
+.ch-ppibik .sig-ink  { fill: none; stroke: var(--ink); stroke-width: 3.6; stroke-linecap: round; }
+.ch-ppibik .sig-led  { fill: none; stroke: var(--led); stroke-width: 1.8; stroke-linecap: round; }
+
+/* safe defaults so static renders (portrait/figure without a .stage) only show the idle face */
+.ch-ppibik .face-b, .ch-ppibik .face-c, .ch-ppibik .face-w { opacity: 0; }
+.ch-ppibik .spring { transform: scale(1, 0); }
+
+/* effects layer (outside the rig) */
+.stage[data-char="ppibik"] .fx .zap   { fill: #FFE45E; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.stage[data-char="ppibik"] .fx .burst { fill: none; stroke: var(--fx-led); stroke-width: 3.4; stroke-linecap: round; }
+.stage[data-char="ppibik"] .fx .stk   { fill: #1F2A44; stroke: var(--ink); stroke-width: 2.4; }
+.stage[data-char="ppibik"] .fx .stk-t { fill: var(--fx-led); }
+.stage[data-char="ppibik"] .fx .stk-h { fill: #FF4FA3; }
+.stage[data-char="ppibik"] .fx .puff  { fill: #DDD7E6; stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; opacity: 0; }
+
+/* ===================== idle: a hover hum (robots don't breathe) — composited .rig only ===================== */
+.stage[data-char="ppibik"][data-state="idle"] .rig { animation: ppibik-hum 2s ease-in-out infinite; }
+@keyframes ppibik-hum {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  50%      { transform: translate(0%, -.6%) rotate(0deg) scale(1, 1); }
+}
+/* fidget (≤ .8 s, JS adds .fidget in idle): LED eyes glance left/right in steps, bulb blinks, antenna twitch */
+.stage[data-char="ppibik"][data-state="idle"].fidget .gaze    { animation: ppibik-glance .8s step-end 1 both; }
+.stage[data-char="ppibik"][data-state="idle"].fidget .eye     { animation: fighter-blink .26s .54s ease-in-out 1 both; }
+.stage[data-char="ppibik"][data-state="idle"].fidget .glow    { animation: ppibik-bulb-blink .8s step-end 1 both; }
+.stage[data-char="ppibik"][data-state="idle"].fidget .antenna { animation: ppibik-twitch .6s ease-in-out 1 both; }
+@keyframes ppibik-glance {
+  0%       { transform: translate(0px, 0px); }
+  8%       { transform: translate(-3px, 0px); }
+  38%      { transform: translate(3px, 0px); }
+  68%, 100% { transform: translate(0px, 0px); }
+}
+@keyframes ppibik-bulb-blink { 0% { opacity: 0; } 10% { opacity: 1; } 22% { opacity: 0; } 34% { opacity: 1; } 46%, 100% { opacity: 0; } }
+@keyframes ppibik-twitch {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(10deg); }
+  40% { transform: rotate(-8deg); }
+  60% { transform: rotate(4deg); }
+  80% { transform: rotate(-1deg); }
+}
+
+/* ===================== my turn (0.6 s): "삐빅!" — hop, antenna boing, LED eyes scan in steps ===================== */
+.stage[data-char="ppibik"][data-state="turn"] .rig {
+  transform-origin: 50% 92%;
+  animation: ppibik-turn .6s linear both, ppibik-hum 2s .6s ease-in-out infinite;
+}
+.stage[data-char="ppibik"][data-state="turn"] .antenna { animation: ppibik-turn-ant .6s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="turn"] .gaze    { animation: ppibik-turn-gaze .6s step-end both; }
+.stage[data-char="ppibik"][data-state="turn"] .glow    { animation: ppibik-turn-blink .6s step-end both; }
+.stage[data-char="ppibik"][data-state="turn"] .sig     { animation: ppibik-turn-blink .6s step-end both; }
+.stage[data-char="ppibik"][data-state="turn"] .head    { animation: ppibik-turn-head .6s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="turn"] .armL    { animation: ppibik-turn-armL .6s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="turn"] .armR    { animation: ppibik-turn-armR .6s ease-in-out both; }
+@keyframes ppibik-turn {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  18%  { transform: translate(0%, 1%) rotate(0deg) scale(1.06, .93); animation-timing-function: ease-out; }
+  42%  { transform: translate(0%, -7%) rotate(0deg) scale(.95, 1.06); animation-timing-function: ease-in; }
+  62%  { transform: translate(0%, .5%) rotate(0deg) scale(1.06, .94); animation-timing-function: ease-out; }
+  80%  { transform: translate(0%, -1%) rotate(0deg) scale(.99, 1.02); animation-timing-function: ease-in-out; }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+@keyframes ppibik-turn-ant {
+  0%, 100% { transform: rotate(0deg); }
+  18% { transform: rotate(10deg); }
+  42% { transform: rotate(-24deg); }
+  62% { transform: rotate(18deg); }
+  78% { transform: rotate(-9deg); }
+  90% { transform: rotate(4deg); }
+}
+@keyframes ppibik-turn-head {
+  0%, 18%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  42%  { transform: translate(0px, -1px) rotate(-7deg); }
+  62%  { transform: translate(0px, .5px) rotate(9deg); }
+  80%  { transform: translate(0px, 0px) rotate(-3deg); }
+}
+@keyframes ppibik-turn-gaze {
+  0%        { transform: translate(0px, 0px); }
+  12%       { transform: translate(-3.5px, 0px); }
+  36%       { transform: translate(3.5px, 0px); }
+  60%, 100% { transform: translate(0px, 0px); }
+}
+@keyframes ppibik-turn-blink { 0% { opacity: 1; } 15% { opacity: 0; } 25% { opacity: 1; } 42%, 100% { opacity: 0; } }
+@keyframes ppibik-turn-armL { 0%, 100% { transform: rotate(0deg); } 18% { transform: rotate(-6deg); } 42% { transform: rotate(34deg); } 62% { transform: rotate(-5deg); } }
+@keyframes ppibik-turn-armR { 0%, 100% { transform: rotate(0deg); } 18% { transform: rotate(6deg); } 42% { transform: rotate(-34deg); } 62% { transform: rotate(5deg); } }
+
+/* ===================== WIN: popping → head spring → heart-LED confetti cannon (2.4 s) + loop ===================== */
+.stage[data-char="ppibik"][data-state="win"] .rig     { transform-origin: 50% 92%; animation: ppibik-win 2.4s ease-in-out both, ppibik-loop 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="win"] .head    { animation: ppibik-head 2.4s ease-in-out both, ppibik-head-loop 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="win"] .spring  { animation: ppibik-spring 2.4s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="win"] .hspin   { animation: ppibik-hspin 2.4s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="win"] .antenna { animation: ppibik-ant 2.4s ease-in-out both, ppibik-ant-loop 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="win"] .armL    { animation: ppibik-armL 2.4s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="win"] .armR    { animation: ppibik-armR 2.4s ease-in-out both, ppibik-armR-loop 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="win"] .legL    { animation: ppibik-legL 2.4s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="win"] .legR    { animation: ppibik-legR 2.4s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="win"] .needle  { animation: ppibik-needle 2.4s ease-in-out both, ppibik-needle-loop .6s 2.4s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="win"] .gaze    { animation: ppibik-gaze 2.4s step-end both; }
+.stage[data-char="ppibik"][data-state="win"] .face-a  { animation: ppibik-face-a 2.4s step-end both; }
+.stage[data-char="ppibik"][data-state="win"] .face-w  { animation: ppibik-face-w 2.4s step-end both; }
+.stage[data-char="ppibik"][data-state="win"] .face-b  { animation: ppibik-face-b 2.4s step-end both; }
+.stage[data-char="ppibik"][data-state="win"] .ht      { animation: ppibik-heart-pop 2.4s ease-out both, ppibik-heart 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="win"] .sig     { animation: ppibik-sig 2.4s step-end both; }
+.stage[data-char="ppibik"][data-state="win"] .glow    { animation: ppibik-glow 2.4s step-end both, ppibik-glow-loop 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="win"] .led1    { animation: ppibik-led1 2.4s step-end both, ppibik-led-loop 1.2s 2.4s step-end infinite; }
+.stage[data-char="ppibik"][data-state="win"] .led2    { animation: ppibik-led2 2.4s step-end both, ppibik-led-loop 1.2s 2.8s step-end infinite; }
+.stage[data-char="ppibik"][data-state="win"] .led3    { animation: ppibik-led3 2.4s step-end both, ppibik-led-loop 1.2s 3.2s step-end infinite; }
+.stage[data-char="ppibik"][data-state="win"] .fx-zap     { animation: ppibik-fx-zap 2.4s step-end both; }
+.stage[data-char="ppibik"][data-state="win"] .fx-burst   { animation: ppibik-fx-burst 2.4s ease-out both; }
+.stage[data-char="ppibik"][data-state="win"] .fx-sticker { animation: ppibik-fx-sticker 2.4s ease-out both; }
+.stage[data-char="ppibik"][data-state="win"] .flash      { animation: ppibik-flash 2.4s ease-out both; }
+.stage[data-char="ppibik"][data-state="win"] .shadow     { animation: ppibik-shadow 2.4s ease-in-out both; }
+
+/* whole body (HTML wrapper, composited): boot jolt → 4 popping hits → tremble → spring-load squash → hop at HIT → CLUNK */
+@keyframes ppibik-win {
+  0%      { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  2.5%    { transform: translate(0%, -2%) rotate(0deg) scale(.97, 1.04); animation-timing-function: ease-in; }
+  5%      { transform: translate(0%, 0%) rotate(0deg) scale(1.03, .97); animation-timing-function: ease-out; }
+  8.333%  { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  9.583%  { transform: translate(0%, .5%) rotate(0deg) scale(1.015, .985); animation-timing-function: ease-out; }
+  10.417% { transform: translate(0%, 0%) rotate(0deg) scale(1.045, 1.045); animation-timing-function: ease-out; }   /* hit 1 */
+  13.75%  { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  17.917% { transform: translate(0%, .5%) rotate(0deg) scale(1.015, .985); animation-timing-function: ease-out; }
+  18.75%  { transform: translate(0%, 0%) rotate(0deg) scale(1.045, 1.045); animation-timing-function: ease-out; }   /* hit 2 */
+  22.083% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  26.25%  { transform: translate(0%, .5%) rotate(0deg) scale(1.015, .985); animation-timing-function: ease-out; }
+  27.083% { transform: translate(2.5%, 0%) rotate(6deg) scale(1.045, 1.045); animation-timing-function: ease-out; } /* hit 3 */
+  30.417% { transform: translate(2.5%, 0%) rotate(5deg) scale(1, 1); }
+  34.583% { transform: translate(2.5%, .5%) rotate(5deg) scale(1.015, .985); animation-timing-function: ease-out; }
+  35.417% { transform: translate(-2.5%, 0%) rotate(-6deg) scale(1.045, 1.045); animation-timing-function: ease-out; } /* hit 4 */
+  38.75%  { transform: translate(-2.5%, 0%) rotate(-5deg) scale(1, 1); }
+  41.667% { transform: translate(-2.5%, 0%) rotate(-5deg) scale(1, 1); animation-timing-function: linear; }         /* malfunction tremble */
+  43.75%  { transform: translate(-1.5%, 0%) rotate(-5.5deg) scale(1, 1); animation-timing-function: linear; }
+  45.833% { transform: translate(-3%, 0%) rotate(-4deg) scale(1, 1); animation-timing-function: linear; }
+  47.917% { transform: translate(-1.5%, .5%) rotate(-2deg) scale(1.03, .97); }
+  50%     { transform: translate(0%, 1.5%) rotate(0deg) scale(1.08, .91); animation-timing-function: cubic-bezier(.2, .9, .3, 1); } /* spring loaded */
+  54.167% { transform: translate(0%, 0%) rotate(0deg) scale(.985, 1.02); animation-timing-function: ease-in-out; }
+  58.333% { transform: translate(0%, .5%) rotate(0deg) scale(1.05, .95); }                                          /* HIT: planted recoil */
+  60%     { transform: translate(0%, .5%) rotate(0deg) scale(1.05, .95); animation-timing-function: ease-out; }
+  64.583% { transform: translate(0%, -1.5%) rotate(0deg) scale(.98, 1.02); }
+  70.833% { transform: translate(0%, 0%) rotate(0deg) scale(1.02, .98); }
+  77.083% { transform: translate(0%, -.8%) rotate(0deg) scale(.99, 1.01); }
+  83.333% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); animation-timing-function: ease-in; }
+  87.5%   { transform: translate(0%, 1.5%) rotate(0deg) scale(1.09, .9); animation-timing-function: ease-out; }     /* CLUNK */
+  91.667% { transform: translate(0%, -1%) rotate(0deg) scale(.98, 1.03); }
+  95.833% { transform: translate(0%, 0%) rotate(0deg) scale(1.01, .99); }
+  100%    { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+/* loop: robot happy-bop, two beats */
+@keyframes ppibik-loop {
+  0%, 50%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  12.5%, 62.5%  { transform: translate(0%, .8%) rotate(0deg) scale(1.035, .965); }
+  30%, 80%      { transform: translate(0%, -1.2%) rotate(0deg) scale(.99, 1.015); }
+}
+/* head on the neck (60,70): popping ticks, launch on the spring, damped bobble, slam back, cute tilt */
+@keyframes ppibik-head {
+  0%, 9.583% { transform: translate(0px, 0px) rotate(0deg); animation-timing-function: ease-out; }
+  10.417% { transform: translate(0px, 0px) rotate(16deg); animation-timing-function: ease-out; }
+  11.667%, 17.917% { transform: translate(0px, 0px) rotate(11deg); animation-timing-function: ease-out; }
+  18.75%  { transform: translate(0px, 0px) rotate(-16deg); animation-timing-function: ease-out; }
+  20%, 26.25% { transform: translate(0px, 0px) rotate(-11deg); animation-timing-function: ease-out; }
+  27.083% { transform: translate(0px, 0px) rotate(16deg); animation-timing-function: ease-out; }
+  28.333%, 34.583% { transform: translate(0px, 0px) rotate(11deg); animation-timing-function: ease-out; }
+  35.417% { transform: translate(0px, 0px) rotate(-16deg); animation-timing-function: ease-out; }
+  36.667%, 41.667% { transform: translate(0px, 0px) rotate(-11deg); }
+  47.917% { transform: translate(0px, 0px) rotate(-3deg); }
+  50%     { transform: translate(0px, 1.5px) rotate(0deg); animation-timing-function: cubic-bezier(.2, .9, .3, 1); } /* BOING */
+  55.833% { transform: translate(0px, -23px) rotate(0deg); }
+  58.333%, 59.167% { transform: translate(0px, -21px) rotate(0deg); }                                          /* HIT */
+  64.583% { transform: translate(0px, -14px) rotate(-8deg); }
+  70.833% { transform: translate(0px, -18.5px) rotate(6deg); }
+  77.083% { transform: translate(0px, -15.5px) rotate(-3deg); }
+  83.333% { transform: translate(0px, -16.5px) rotate(0deg); animation-timing-function: ease-in; }
+  87.5%   { transform: translate(0px, 1.5px) rotate(0deg); animation-timing-function: ease-out; }               /* CLUNK */
+  90%     { transform: translate(0px, -1px) rotate(2deg); }
+  93.75%, 100% { transform: translate(0px, 0px) rotate(6deg); }
+}
+@keyframes ppibik-head-loop {
+  0%, 44%, 100% { transform: translate(0px, 0px) rotate(6deg); }
+  50%, 94%      { transform: translate(0px, 0px) rotate(-5deg); }
+}
+/* spring scaleY = head lift / 22 (same keyframes + easings as ppibik-head, so the coil always reaches the head) */
+@keyframes ppibik-spring {
+  0%, 50% { transform: scale(1, 0); animation-timing-function: cubic-bezier(.2, .9, .3, 1); }
+  55.833% { transform: scale(1, 1.045); }
+  58.333%, 59.167% { transform: scale(1, .955); }
+  64.583% { transform: scale(1, .636); }
+  70.833% { transform: scale(1, .841); }
+  77.083% { transform: scale(1, .705); }
+  83.333% { transform: scale(1, .75); animation-timing-function: ease-in; }
+  87.5%, 100% { transform: scale(1, 0); }
+}
+/* malfunction: in-plane spin around the head centre (60,46.5), with a dial-like wobble on stop */
+@keyframes ppibik-hspin {
+  0%, 40.417% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.5, 0, .7, .9); }
+  49%     { transform: rotate(374deg); animation-timing-function: ease-in-out; }
+  52.083% { transform: rotate(354deg); }
+  54.583%, 100% { transform: rotate(360deg); }
+}
+@keyframes ppibik-ant {
+  0%      { transform: rotate(0deg); }
+  2.5%    { transform: rotate(-12deg); }
+  5%      { transform: rotate(9deg); }
+  8.333%  { transform: rotate(-2deg); }
+  10.417% { transform: rotate(-14deg); }
+  13.75%  { transform: rotate(6deg); }
+  17.917% { transform: rotate(0deg); }
+  18.75%  { transform: rotate(14deg); }
+  22.083% { transform: rotate(-6deg); }
+  26.25%  { transform: rotate(0deg); }
+  27.083% { transform: rotate(-14deg); }
+  30.417% { transform: rotate(6deg); }
+  34.583% { transform: rotate(0deg); }
+  35.417% { transform: rotate(14deg); }
+  38.75%  { transform: rotate(-6deg); }
+  41.667%, 59.167% { transform: rotate(0deg); }
+  62.5%   { transform: rotate(18deg); }
+  66.667% { transform: rotate(-13deg); }
+  70.833% { transform: rotate(8deg); }
+  75%     { transform: rotate(-4deg); }
+  79.167%, 87.5% { transform: rotate(0deg); }
+  89.583% { transform: rotate(-22deg); }
+  92.5%   { transform: rotate(15deg); }
+  95.833% { transform: rotate(-7deg); }
+  100%    { transform: rotate(0deg); }
+}
+@keyframes ppibik-ant-loop {
+  0%, 50%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-8deg); }
+  70% { transform: rotate(8deg); }
+}
+/* popping arm wave: R out → L out (T) → disco point R up → disco point L up; tremble; V at HIT; claw-up finish */
+@keyframes ppibik-armL {
+  0%, 17.917% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  18.75%  { transform: rotate(99deg); animation-timing-function: ease-out; }
+  20%, 26.25% { transform: rotate(90deg); animation-timing-function: ease-out; }
+  27.083% { transform: rotate(18deg); animation-timing-function: ease-out; }
+  28.333%, 34.583% { transform: rotate(25deg); animation-timing-function: ease-out; }
+  35.417% { transform: rotate(134deg); animation-timing-function: ease-out; }
+  36.667%, 41.667% { transform: rotate(126deg); animation-timing-function: linear; }
+  43.75%  { transform: rotate(117deg); animation-timing-function: linear; }
+  45.833% { transform: rotate(131deg); animation-timing-function: linear; }
+  47.917% { transform: rotate(121deg); }
+  50%     { transform: rotate(108deg); animation-timing-function: cubic-bezier(.2, .9, .3, 1); }
+  56.667% { transform: rotate(158deg); }
+  58.333%, 60% { transform: rotate(150deg); }
+  64.583% { transform: rotate(139deg); }
+  70.833% { transform: rotate(156deg); }
+  77.083% { transform: rotate(144deg); }
+  83.333% { transform: rotate(150deg); animation-timing-function: ease-in; }
+  87.5%   { transform: rotate(106deg); animation-timing-function: ease-out; }
+  92.5%   { transform: rotate(46deg); }
+  96.667% { transform: rotate(59deg); }
+  100%    { transform: rotate(55deg); }
+}
+@keyframes ppibik-armR {
+  0%, 9.583% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  10.417% { transform: rotate(-99deg); animation-timing-function: ease-out; }
+  11.667%, 26.25% { transform: rotate(-90deg); animation-timing-function: ease-out; }
+  27.083% { transform: rotate(-134deg); animation-timing-function: ease-out; }
+  28.333%, 34.583% { transform: rotate(-126deg); animation-timing-function: ease-out; }
+  35.417% { transform: rotate(-18deg); animation-timing-function: ease-out; }
+  36.667%, 41.667% { transform: rotate(-25deg); animation-timing-function: linear; }
+  43.75%  { transform: rotate(-33deg); animation-timing-function: linear; }
+  45.833% { transform: rotate(-20deg); animation-timing-function: linear; }
+  47.917% { transform: rotate(-29deg); }
+  50%     { transform: rotate(-12deg); animation-timing-function: cubic-bezier(.2, .9, .3, 1); }
+  56.667% { transform: rotate(-158deg); }
+  58.333%, 60% { transform: rotate(-150deg); }
+  64.583% { transform: rotate(-161deg); }
+  70.833% { transform: rotate(-143deg); }
+  77.083% { transform: rotate(-155deg); }
+  83.333% { transform: rotate(-150deg); animation-timing-function: ease-in; }
+  87.5%   { transform: rotate(-106deg); animation-timing-function: ease-out; }
+  91.667% { transform: rotate(-120deg); }
+  95.833% { transform: rotate(-101deg); }
+  100%    { transform: rotate(-105deg); }
+}
+@keyframes ppibik-armR-loop {
+  0%, 50%, 100% { transform: rotate(-105deg); }
+  12.5%, 62.5%  { transform: rotate(-124deg); }
+}
+@keyframes ppibik-legL {
+  0%, 34.583% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  35.417% { transform: rotate(18deg); }
+  36.667%, 47.917% { transform: rotate(14deg); }
+  50%, 100% { transform: rotate(0deg); }
+}
+@keyframes ppibik-legR {
+  0%, 26.25% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  27.083% { transform: rotate(-18deg); }
+  28.333%, 34.583% { transform: rotate(-14deg); animation-timing-function: ease-out; }
+  35.417%, 100% { transform: rotate(0deg); }
+}
+/* chest dial: climbs a notch per hit, quivers in the malfunction, then spins off the scale ("측정 불가") */
+@keyframes ppibik-needle {
+  0%, 9.583% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  10.417%, 17.917% { transform: rotate(22deg); animation-timing-function: ease-out; }
+  18.75%, 26.25%   { transform: rotate(44deg); animation-timing-function: ease-out; }
+  27.083%, 34.583% { transform: rotate(66deg); animation-timing-function: ease-out; }
+  35.417%, 41.667% { transform: rotate(88deg); animation-timing-function: linear; }
+  43.75%  { transform: rotate(62deg); animation-timing-function: linear; }
+  45.833% { transform: rotate(100deg); animation-timing-function: linear; }
+  47.917% { transform: rotate(70deg); }
+  50%, 58.333% { transform: rotate(96deg); animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  75%, 100% { transform: rotate(800deg); }
+}
+@keyframes ppibik-needle-loop {
+  0%, 100% { transform: rotate(800deg); }
+  50%      { transform: rotate(812deg); }
+}
+@keyframes ppibik-gaze {
+  0%      { transform: translate(0px, 0px); }
+  10.417% { transform: translate(2.5px, 0px); }
+  18.75%  { transform: translate(-2.5px, 0px); }
+  27.083% { transform: translate(2.5px, -1.5px); }
+  35.417% { transform: translate(-2.5px, -1.5px); }
+  41.667%, 100% { transform: translate(0px, 0px); }
+}
+/* faces: LEDs boot (off → 삐 → off → 빅), surprised O O as the head flies, hearts from the HIT on */
+@keyframes ppibik-face-a { 0% { opacity: 0; } 1.667% { opacity: 1; } 3.75% { opacity: 0; } 6.25% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes ppibik-face-w { 0% { opacity: 0; } 50% { opacity: 1; } 58.333%, 100% { opacity: 0; } }
+@keyframes ppibik-face-b { 0% { opacity: 0; } 58.333%, 100% { opacity: 1; } }
+@keyframes ppibik-heart-pop {
+  0%, 58.2% { transform: scale(.5); }
+  58.333%   { transform: scale(1.22); animation-timing-function: ease-out; }
+  60.417%   { transform: scale(1.35); animation-timing-function: ease-in-out; }
+  64.583%   { transform: scale(.92); }
+  68.75%, 100% { transform: scale(1); }
+}
+@keyframes ppibik-heart {
+  0%, 30%, 50%, 80%, 100% { transform: scale(1); }
+  12.5%, 62.5% { transform: scale(1.14); }
+}
+@keyframes ppibik-sig { 0% { opacity: 0; } 1.667% { opacity: 1; } 3.75% { opacity: 0; } 6.25% { opacity: 1; } 8.75%, 100% { opacity: 0; } }
+@keyframes ppibik-glow {
+  0% { opacity: 0; } 1.667% { opacity: 1; } 3.75% { opacity: 0; } 6.25% { opacity: 1; } 8.75% { opacity: 0; }
+  58.333% { opacity: 1; animation-timing-function: ease-out; }
+  70.833% { opacity: .35; animation-timing-function: ease-in-out; }
+  83.333% { opacity: .8; animation-timing-function: ease-in-out; }
+  100% { opacity: .55; }
+}
+@keyframes ppibik-glow-loop { 0%, 100% { opacity: .55; } 12.5%, 62.5% { opacity: 1; } 35%, 85% { opacity: .2; } }
+/* chest LEDs fill up one per popping hit (a "joy meter"), then chase in the loop */
+@keyframes ppibik-led1 { 0% { opacity: .25; } 10.417%, 100% { opacity: 1; } }
+@keyframes ppibik-led2 { 0% { opacity: .25; } 18.75%, 100% { opacity: 1; } }
+@keyframes ppibik-led3 { 0% { opacity: .25; } 27.083%, 100% { opacity: 1; } }
+@keyframes ppibik-led-loop { 0% { opacity: 1; } 33.333%, 100% { opacity: .3; } }
+@keyframes ppibik-fx-zap {
+  0% { opacity: 0; } 41.667% { opacity: 1; } 43.75% { opacity: 0; } 45.833% { opacity: 1; } 47.917% { opacity: 0; }
+  48.958% { opacity: 1; } 50%, 100% { opacity: 0; }
+}
+@keyframes ppibik-fx-burst {
+  0%, 58.2% { opacity: 0; transform: scale(.8); }
+  58.333%   { opacity: 1; transform: scale(.92); }
+  68%, 100% { opacity: 0; transform: scale(1.3); }
+}
+@keyframes ppibik-fx-sticker {
+  0%, 58.2% { opacity: 0; transform: scale(0) rotate(-24deg); }
+  60.833%   { opacity: 1; transform: scale(1.25) rotate(-4deg); animation-timing-function: ease-in-out; }
+  63.333%, 83.333% { opacity: 1; transform: scale(1) rotate(-10deg); }
+  87.5%, 100% { opacity: 0; transform: scale(.4) rotate(-10deg); }
+}
+@keyframes ppibik-flash {
+  0%, 58.2% { opacity: 0; transform: translate(0%, -30%) scale(.4); }
+  58.75%    { opacity: .9; transform: translate(0%, -30%) scale(.85); }
+  66%, 100% { opacity: 0; transform: translate(0%, -30%) scale(1.3); }
+}
+@keyframes ppibik-shadow {
+  0%, 47.917%, 100% { transform: scale(1, 1); opacity: 1; }
+  50%       { transform: scale(1.1, 1); opacity: 1; }
+  58.333%   { transform: scale(1.12, 1); opacity: 1; }
+  64.583%   { transform: scale(.94, .95); opacity: .9; }
+  87.5%     { transform: scale(1.14, 1); opacity: 1; }
+}
+
+/* ===================== LOSE: short-circuit jolt → power-down slump, red ✕✕ glitching, smoke from the ear bolts ===================== */
+.stage[data-char="ppibik"][data-state="lose"] .rig     { transform-origin: 50% 92%; animation: ppibik-lose 1s linear both, ppibik-lose-loop 2.4s 1s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="lose"] .head    { animation: ppibik-lose-head 1s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="lose"] .antenna { animation: ppibik-lose-ant 1s ease-in-out both, ppibik-lose-ant-loop 2.4s 1s ease-in-out infinite; }
+.stage[data-char="ppibik"][data-state="lose"] .armL    { animation: ppibik-lose-armL 1s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="lose"] .armR    { animation: ppibik-lose-armR 1s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="lose"] .legL    { animation: ppibik-lose-legL 1s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="lose"] .legR    { animation: ppibik-lose-legR 1s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="lose"] .needle  { animation: ppibik-lose-needle 1s ease-in-out both; }
+.stage[data-char="ppibik"][data-state="lose"] :is(.led1, .led2, .led3) { animation: ppibik-lose-led 1s step-end both; }
+.stage[data-char="ppibik"][data-state="lose"] .bulb-off { animation: ppibik-lose-bulb 1s step-end both; }
+.stage[data-char="ppibik"][data-state="lose"] .glitch  { animation: ppibik-glitch 1.1s step-end infinite; }
+.stage[data-char="ppibik"][data-state="lose"] .fx-zap  { animation: ppibik-lose-zap 1s step-end both; }
+.stage[data-char="ppibik"][data-state="lose"] .fx .fx-smoke { opacity: 1; }
+.stage[data-char="ppibik"][data-state="lose"] .fx .puff { animation: ppibik-puff 1.6s .3s ease-out infinite both; }
+.stage[data-char="ppibik"][data-state="lose"] .fx-smoke > :nth-child(2) .puff { animation-delay: .7s; }
+.stage[data-char="ppibik"][data-state="lose"] .fx-smoke > :nth-child(3) .puff { animation-delay: 1.1s; }
+.stage[data-char="ppibik"][data-state="lose"] .fx-smoke > :nth-child(4) .puff { animation-delay: 1.5s; }
+@keyframes ppibik-lose {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  8%   { transform: translate(0%, -3%) rotate(2deg) scale(.96, 1.05); animation-timing-function: ease-in; }    /* zzzt! */
+  16%  { transform: translate(0%, 0%) rotate(-1.5deg) scale(1.03, .97); animation-timing-function: ease-out; }
+  24%  { transform: translate(.8%, -1%) rotate(1deg) scale(1, 1); animation-timing-function: linear; }
+  30%  { transform: translate(-.6%, 0%) rotate(0deg) scale(1, 1); animation-timing-function: ease-in; }
+  58%  { transform: translate(0%, 1.2%) rotate(-4deg) scale(1.06, .9); animation-timing-function: ease-out; } /* power down */
+  76%  { transform: translate(0%, .6%) rotate(-2.5deg) scale(1.03, .94); animation-timing-function: ease-in-out; }
+  100% { transform: translate(0%, .8%) rotate(-3deg) scale(1.04, .92); }
+}
+@keyframes ppibik-lose-loop {
+  0%, 100% { transform: translate(0%, .8%) rotate(-3deg) scale(1.04, .92); }
+  50%      { transform: translate(0%, .8%) rotate(1deg) scale(1.04, .92); }
+}
+@keyframes ppibik-lose-head {
+  0%   { transform: translate(0px, 0px) rotate(0deg); }
+  8%   { transform: translate(0px, -2px) rotate(5deg); }
+  22%  { transform: translate(0px, 0px) rotate(-3deg); }
+  58%  { transform: translate(0px, 3px) rotate(-10deg); }
+  76%  { transform: translate(0px, 2px) rotate(-7deg); }
+  100% { transform: translate(0px, 2.5px) rotate(-8deg); }
+}
+@keyframes ppibik-lose-ant {
+  0%   { transform: rotate(0deg); }
+  8%   { transform: rotate(18deg); }
+  24%  { transform: rotate(-12deg); }
+  56%  { transform: rotate(-72deg); }
+  72%  { transform: rotate(-52deg); }
+  86%  { transform: rotate(-64deg); }
+  100% { transform: rotate(-60deg); }
+}
+@keyframes ppibik-lose-ant-loop { 0%, 100% { transform: rotate(-60deg); } 50% { transform: rotate(-49deg); } }
+@keyframes ppibik-lose-armL { 0% { transform: rotate(0deg); } 8% { transform: rotate(36deg); } 24% { transform: rotate(10deg); } 58% { transform: rotate(-8deg); } 76% { transform: rotate(-3deg); } 100% { transform: rotate(-5deg); } }
+@keyframes ppibik-lose-armR { 0% { transform: rotate(0deg); } 8% { transform: rotate(-36deg); } 24% { transform: rotate(-10deg); } 58% { transform: rotate(8deg); } 76% { transform: rotate(3deg); } 100% { transform: rotate(5deg); } }
+@keyframes ppibik-lose-legL { 0% { transform: rotate(0deg); } 8% { transform: rotate(7deg); } 58%, 100% { transform: rotate(-4deg); } }
+@keyframes ppibik-lose-legR { 0% { transform: rotate(0deg); } 8% { transform: rotate(-7deg); } 58%, 100% { transform: rotate(4deg); } }
+@keyframes ppibik-lose-needle {
+  0%   { transform: rotate(0deg); }
+  8%   { transform: rotate(72deg); }
+  28%  { transform: rotate(40deg); }
+  60%  { transform: rotate(-86deg); }
+  76%  { transform: rotate(-70deg); }
+  100% { transform: rotate(-76deg); }
+}
+@keyframes ppibik-lose-led { 0% { opacity: 1; } 16% { opacity: .2; } 26% { opacity: 1; } 40%, 100% { opacity: .2; } }
+@keyframes ppibik-lose-bulb { 0% { opacity: 0; } 16% { opacity: .6; } 26% { opacity: 0; } 40%, 100% { opacity: .6; } }
+@keyframes ppibik-lose-zap { 0% { opacity: 1; } 8% { opacity: 0; } 14% { opacity: 1; } 22%, 100% { opacity: 0; } }
+@keyframes ppibik-glitch {
+  0%   { transform: translate(0px, 0px); }
+  12%  { transform: translate(1.2px, 0px); }
+  18%  { transform: translate(-1px, .6px); }
+  24%  { transform: translate(0px, 0px); }
+  64%  { transform: translate(-1.2px, 0px); }
+  70%  { transform: translate(.8px, -.5px); }
+  76%, 100% { transform: translate(0px, 0px); }
+}
+@keyframes ppibik-puff {
+  0%   { opacity: 0; transform: translate(0px, 0px) scale(.4); }
+  15%  { opacity: 1; transform: translate(0px, -2px) scale(.85); }
+  60%  { opacity: .85; transform: translate(0px, -9px) scale(1.25); }
+  100% { opacity: 0; transform: translate(0px, -15px) scale(1.5); }
+}
+
+/* ===================== reduced motion: static HIT pose (head up on the spring, heart LEDs, arms in a V) ===================== */
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="win"] .head   { transform: translate(0px, -16px) rotate(0deg); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="win"] .spring { transform: scale(1, .727); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="win"] .armL   { transform: rotate(150deg); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="win"] .armR   { transform: rotate(-150deg); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="win"] .needle { transform: rotate(80deg); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="win"] .glow   { opacity: .6; }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="win"] .fx-sticker {
+  opacity: 1; transform: scale(1) rotate(-10deg); animation: fighter-rm-fade .4s ease-out both !important;
+}
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="lose"] .rig     { transform-origin: 50% 92%; transform: translate(0%, .8%) rotate(-3deg) scale(1.04, .92); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="lose"] .head    { transform: translate(0px, 2.5px) rotate(-8deg); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="lose"] .antenna { transform: rotate(-60deg); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="lose"] .needle  { transform: rotate(-76deg); }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="lose"] .bulb-off { opacity: .6; }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="lose"] :is(.led1, .led2, .led3) { opacity: .2; }
+[data-motion="reduce"] .stage[data-char="ppibik"][data-state="lose"] .fx .fx-smoke { opacity: 0; }

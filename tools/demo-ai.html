@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Demo</title>
+<!--
+  Dev page (not precached): drives js/ai-client.js in a real browser.
+  Serve the project root (python3 tools/serve.py, or python3 -m http.server) and open
+    /tools/demo-ai.html                 module Worker path
+    /tools/demo-ai.html?mode=noworker   window.Worker removed  → main-thread fallback
+    /tools/demo-ai.html?mode=badworker  Worker script fails to load (404) → fallback
+  Optional: &plies=8 moves per level, &levels=easy,normal,hard
+  Results are also exposed as window.__demo (a Promise of the JSON) for scripted runs.
+-->
+<style>
+  :root { --bg:#17121F; --bg2:#221A2E; --line:#3B2F4F; --text:#FFF4DE; --dim:#BBAFCF; --p1:#FF4757; --p2:#2E9BFF; --gold:#FFD23F; --lime:#B6FF4D; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: var(--dim); margin: 0 0 12px; }
+  .wrap { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  canvas { background: #C9A06A; border-radius: 6px; width: min(360px, 100%); height: auto; }
+  table { border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 13px; }
+  th, td { padding: 3px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+  th { color: var(--dim); font-weight: 600; }
+  td.l, th.l { text-align: left; }
+  .card { background: var(--bg2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .ok { color: var(--lime); } .bad { color: var(--p1); }
+  #log { white-space: pre-wrap; font: 12px ui-monospace, Menlo, monospace; color: var(--dim); margin-top: 12px; }
+  .boards { display: flex; flex-wrap: wrap; gap: 12px; }
+  .boards figure { margin: 0; } .boards figcaption { color: var(--dim); font-size: 12px; margin-top: 2px; }
+  .boards canvas { width: 180px; }
+</style>
+</head>
+<body>
+<h1>돌주먹 AI demo</h1>
+<p class="sub" id="sub">…</p>
+<div class="wrap">
+  <div class="card"><table id="sum"><thead><tr><th class="l">level</th><th>moves</th><th>via</th><th>avg ms</th><th>max ms</th><th>avg depth</th><th>legal</th></tr></thead><tbody></tbody></table></div>
+  <div class="boards" id="boards"></div>
+</div>
+<div class="card" style="margin-top:16px; overflow-x:auto"><table id="moves"><thead><tr><th class="l">level</th><th>#</th><th>move</th><th class="l">reason</th><th>depth</th><th>nodes</th><th>engine ms</th><th>wall ms</th><th class="l">via</th></tr></thead><tbody></tbody></table></div>
+<div id="log"></div>
+
+<script type="module">
+  const q = new URLSearchParams(location.search);
+  const mode = q.get('mode') || 'worker';
+  const plies = Math.max(1, Math.min(40, +(q.get('plies') || 8)));
+  const levels = (q.get('levels') || 'easy,normal,hard').split(',').filter((l) => ['easy', 'normal', 'hard'].includes(l));
+
+  // Simulated failures, installed before the client module looks at window.Worker.
+  if (mode === 'noworker') delete window.Worker;
+  if (mode === 'badworker') {
+    const Real = window.Worker;
+    window.Worker = class extends Real { constructor(_url, opts) { super(new URL('./no-such-worker.js', location.href), opts); } };
+  }
+
+  const { createAiClient } = await import('../js/ai-client.js');
+  const { judgeMove, DEFAULT_RULES, N, BLACK, WHITE } = await import('../js/rules.js');
+
+  const $ = (s) => document.querySelector(s);
+  const log = (s) => { $('#log').textContent += s + '\n'; };
+  $('#sub').textContent = `mode=${mode} · ${plies} moves per level · ${navigator.userAgent.match(/(Chrome|Version)\/[\d.]+/)?.[0] ?? ''}`;
+
+  function draw(canvas, moves) {
+    const s = canvas.width, cell = s / 16, ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, s, s);
+    ctx.strokeStyle = '#3a2a18'; ctx.lineWidth = 1;
+    for (let k = 0; k < N; k++) {
+      ctx.beginPath(); ctx.moveTo(cell, cell * (k + 1)); ctx.lineTo(cell * 15, cell * (k + 1)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cell * (k + 1), cell); ctx.lineTo(cell * (k + 1), cell * 15); ctx.stroke();
+    }
+    moves.forEach((m, k) => {
+      const x = (m % N + 1) * cell, y = (((m / N) | 0) + 1) * cell;
+      ctx.beginPath(); ctx.arc(x, y, cell * 0.44, 0, Math.PI * 2);
+      ctx.fillStyle = k % 2 ? '#f5f1e8' : '#1b1b1f'; ctx.fill();
+      ctx.fillStyle = k % 2 ? '#1b1b1f' : '#f5f1e8';
+      ctx.font = `${Math.round(cell * 0.42)}px system-ui`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(k + 1), x, y + 0.5);
+    });
+  }
+
+  const client = createAiClient({ overlineWins: false });
+  const out = { mode, ua: navigator.userAgent, warm: null, levels: {}, cancel: null, errors: [] };
+  window.addEventListener('error', (e) => out.errors.push(String(e.message)));
+
+  async function run() {
+    const t0 = performance.now();
+    out.warm = { ok: await client.warm(), ms: Math.round(performance.now() - t0) };
+    log(`warm: worker ready=${out.warm.ok} in ${out.warm.ms} ms`);
+
+    for (const level of levels) {
+      client.reset();
+      const moves = [];
+      const g = new Int8Array(N * N);
+      const rows = [];
+      let legal = true;
+      for (let p = 0; p < plies; p++) {
+        const t = performance.now();
+        const r = await client.think({ moves, level, seed: 1000 + p });
+        const wall = Math.round(performance.now() - t);
+        const c = moves.length % 2 ? WHITE : BLACK;
+        const j = r.move >= 0 ? judgeMove(g, r.move % N, (r.move / N) | 0, c, DEFAULT_RULES) : { ok: false };
+        if (!j.ok) legal = false;
+        rows.push({ ...r, wall });
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="l">${level}</td><td>${p + 1}</td><td>${r.move % N},${(r.move / N) | 0}</td><td class="l">${r.reason}</td><td>${r.depth}</td><td>${r.nodes}</td><td>${r.ms}</td><td>${wall}</td><td class="l">${r.via}</td>`;
+        $('#moves tbody').append(tr);
+        if (!j.ok) break;
+        g[r.move] = c; moves.push(r.move);
+        if (j.win) break;
+      }
+      const avg = (k) => Math.round(rows.reduce((s, r) => s + r[k], 0) / rows.length);
+      const sum = { n: rows.length, via: [...new Set(rows.map((r) => r.via))].join('/'), avgWall: avg('wall'), maxWall: Math.max(...rows.map((r) => r.wall)), avgMs: avg('ms'), maxMs: Math.max(...rows.map((r) => r.ms)), avgDepth: +(rows.reduce((s, r) => s + r.depth, 0) / rows.length).toFixed(1), legal, rows };
+      out.levels[level] = sum;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="l">${level}</td><td>${sum.n}</td><td>${sum.via}</td><td>${sum.avgWall}</td><td>${sum.maxWall}</td><td>${sum.avgDepth}</td><td class="${legal ? 'ok' : 'bad'}">${legal ? '✓' : '✗'}</td>`;
+      $('#sum tbody').append(tr);
+      const fig = document.createElement('figure');
+      const cv = document.createElement('canvas'); cv.width = cv.height = 360;
+      fig.append(cv); fig.insertAdjacentHTML('beforeend', `<figcaption>${level} self-play</figcaption>`);
+      $('#boards').append(fig);
+      draw(cv, moves);
+      log(`${level}: ${sum.n} moves via ${sum.via}, wall avg ${sum.avgWall} / max ${sum.maxWall} ms, depth ${sum.avgDepth}`);
+    }
+
+    // cancel: start a hard search, cancel it after 50 ms, then make sure the next request works
+    const busy = client.think({ moves: [112, 113, 98, 126], level: 'hard', seed: 1 });
+    await new Promise((r) => setTimeout(r, 50));
+    const tc = performance.now();
+    client.cancel();
+    let aborted = false;
+    try { await busy; } catch (e) { aborted = e.name === 'AbortError'; }
+    const after = await client.think({ moves: [112, 113, 98, 126], level: 'easy', seed: 2 });
+    out.cancel = { aborted, cancelMs: Math.round(performance.now() - tc), nextVia: after.via, nextOk: after.move >= 0 };
+    log(`cancel: aborted=${aborted}, next request via ${after.via} in ${out.cancel.cancelMs} ms total`);
+    client.dispose();
+    return out;
+  }
+
+  window.__demo = run().catch((e) => { out.errors.push(String(e?.stack ?? e)); log('ERROR ' + e); return out; });
+</script>
+</body>
+</html>

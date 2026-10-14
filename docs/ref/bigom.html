@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>비곰 rig test</title>
+<style>
+/* ===================== shared fighter rig (css/fighters.css) ===================== */
+:root { --ink: #2A1E2F; }
+body { margin: 0; background: #F4EEDF; font-family: system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif; }
+
+.stage {
+  position: relative;
+  width: var(--size, 200px);
+  aspect-ratio: 1;
+  perspective: calc(var(--size, 200px) * 3);   /* for the headspin rotateY */
+}
+.stage > * { position: absolute; inset: 0; }
+.stage .rig { transform-origin: 50% 52.5%; }     /* (60,63) in viewBox units */
+.stage svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.stage .shadow {
+  inset: auto; left: 28%; width: 44%; top: 91%; height: 5%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(42,30,47,.30), rgba(42,30,47,0));
+}
+.stage .flash {
+  border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255,255,255,.95), rgba(255,246,200,.55) 45%, rgba(255,255,255,0));
+}
+
+/* outline + joint conventions */
+.ch .o  { stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.ch .o2 { stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.ch .ln { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+/* every animated part sits inside <g transform="translate(joint)">, so its local 0,0 IS the joint */
+.ch .p, .fx .p { transform-box: view-box; transform-origin: 0 0; }
+/* self-centred bits (blink) pivot on their own bbox */
+.ch .eye { transform-box: fill-box; transform-origin: 50% 50%; }
+.face-b, .face-c, .fx-spin, .fx-burst, .fx-sticker, .fx-dizzy { opacity: 0; }
+.stage, .stage * { pointer-events: none; }
+/* promote only the HTML layers, only while a one-shot state runs (JS clears data-state->idle-loop afterwards) */
+.stage:is([data-state="win"], [data-state="lose"]) :is(.rig, .flash, .shadow) { will-change: transform, opacity; }
+
+/* ===================== 비곰 palette (P1) + alt palette (P2 mirror match) ===================== */
+.ch-bigom {
+  --fur: #8B5A3C; --fur-in: #E9B48A; --muzzle: #F3D9B1;
+  --suit: #2F6BFF; --suit-sh: #2350C8; --cuff: #FFFFFF;
+  --hat: #FFC83D; --hat-band: #F5A524; --shoe: #FFFFFF; --sole: #FF4D4D;
+  --cheek: #FF8FA3; --mouth: #6B2335; --tongue: #FF7A8A;
+}
+.alt .ch-bigom { --fur: #5E3B28; --suit: #FF4F8B; --suit-sh: #D93A72; --hat: #3FD9A8; --hat-band: #22B386; }
+.fur { fill: var(--fur); } .fur-in { fill: var(--fur-in); } .muzzle { fill: var(--muzzle); }
+.suit { fill: var(--suit); } .suit-sh { fill: var(--suit-sh); } .cuff { fill: var(--cuff); }
+.hat { fill: var(--hat); } .hat-band { fill: var(--hat-band); } .shoe { fill: var(--shoe); }
+.ink { fill: var(--ink); } .cheek { fill: var(--cheek); opacity: .6; }
+
+/* ===================== idle: composited breathing only ===================== */
+.stage[data-state="idle"] .rig { transform-origin: 50% 93%; animation: breathe 2.6s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50%      { transform: scale(1.018, .982); }
+}
+/* JS adds .fidget for one short SVG-part flourish every 5-9 s (no endless SVG repaints) */
+.stage.fidget .eye { animation: blink .35s ease-in-out 1; }
+@keyframes blink { 0%, 100% { transform: scaleY(1); } 45% { transform: scaleY(.12); } }
+.stage[data-char="bigom"].fidget .head { animation: bigom-nod .63s ease-in-out 2; }
+
+/* ===================== my turn (0.6 s one-shot, then idle breathing) ===================== */
+.stage[data-char="bigom"][data-state="turn"] .rig {
+  transform-origin: 50% 93%;
+  animation: bigom-turn .6s cubic-bezier(.3, 1.5, .6, 1) both, breathe 2.6s .6s ease-in-out infinite;
+}
+.stage[data-char="bigom"][data-state="turn"] .armL { animation: bigom-turn-armL .6s ease-out both; }
+.stage[data-char="bigom"][data-state="turn"] .armR { animation: bigom-turn-armR .6s ease-out both; }
+@keyframes bigom-turn {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  25%  { transform: translate(-3%, -5%) rotate(-5deg) scale(1, 1); }
+  50%  { transform: translate(0%, 0%) rotate(0deg) scale(1.05, .95); }
+  75%  { transform: translate(3%, -5%) rotate(5deg) scale(1, 1); }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+}
+@keyframes bigom-turn-armL { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-35deg); } 75% { transform: rotate(25deg); } }
+@keyframes bigom-turn-armR { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-25deg); } 75% { transform: rotate(35deg); } }
+
+/* ===================== WIN: toprock > windmill > headspin > freeze > kip-up (2.4 s) + nod loop ===================== */
+.stage[data-char="bigom"][data-state="win"] .rig    { animation: bigom-win 2.4s linear both, bigom-loop 1.26s 2.4s ease-in-out infinite; }
+.stage[data-char="bigom"][data-state="win"] .legL   { animation: bigom-legL 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .legR   { animation: bigom-legR 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .armL   { animation: bigom-armL 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .armR   { animation: bigom-armR 2.4s ease-in-out both; }
+.stage[data-char="bigom"][data-state="win"] .head   { animation: bigom-head 2.4s ease-in-out both, bigom-nod 1.26s 2.4s ease-in-out infinite; }
+.stage[data-char="bigom"][data-state="win"] .face-a { animation: show-until-65 2.4s step-end both; }
+.stage[data-char="bigom"][data-state="win"] .face-b { animation: show-from-65 2.4s step-end both; }
+.stage[data-char="bigom"][data-state="win"] .fx-spin   { animation: bigom-fx-spin 2.4s linear both; }
+.stage[data-char="bigom"][data-state="win"] .fx-burst  { animation: bigom-fx-burst 2.4s ease-out both; }
+.stage[data-char="bigom"][data-state="win"] .fx-sticker{ animation: bigom-fx-sticker 2.4s ease-out both; }
+.stage[data-char="bigom"][data-state="win"] .flash     { animation: bigom-flash 2.4s ease-out both; }
+.stage[data-char="bigom"][data-state="win"] .shadow    { animation: bigom-shadow 2.4s ease-in-out both; }
+
+/* whole body = HTML wrapper = composited. Same function list in EVERY keyframe so 540deg/1080deg really spin. */
+@keyframes bigom-win {
+  0%     { transform: translate(0%, 0%)   rotate(0deg)   rotateY(0deg)    scale(1, 1); animation-timing-function: ease-out; }
+  4.17%  { transform: translate(-3%, -4%) rotate(-6deg)  rotateY(0deg)    scale(1, 1); animation-timing-function: ease-in-out; } /* toprock */
+  8%     { transform: translate(0%, 0%)   rotate(0deg)   rotateY(0deg)    scale(1.04, .96); }
+  12%    { transform: translate(3%, -4%)  rotate(6deg)   rotateY(0deg)    scale(1, 1); animation-timing-function: ease-in; }
+  16%    { transform: translate(0%, 8%)   rotate(0deg)   rotateY(0deg)    scale(1.1, .86); animation-timing-function: linear; } /* drop */
+  19.67% { transform: translate(0%, 14%)  rotate(90deg)  rotateY(0deg)    scale(1, 1); animation-timing-function: linear; }     /* windmill x1.5 */
+  23.33% { transform: translate(0%, 0%)   rotate(180deg) rotateY(0deg)    scale(1, 1); animation-timing-function: linear; }
+  27%    { transform: translate(0%, 14%)  rotate(270deg) rotateY(0deg)    scale(1, 1); animation-timing-function: linear; }
+  30.67% { transform: translate(0%, 8%)   rotate(360deg) rotateY(0deg)    scale(1.04, .9); animation-timing-function: linear; }
+  34.33% { transform: translate(0%, 14%)  rotate(450deg) rotateY(0deg)    scale(1, 1); animation-timing-function: ease-out; }
+  38%    { transform: translate(0%, 0%)   rotate(540deg) rotateY(0deg)    scale(1, 1); animation-timing-function: cubic-bezier(.5, 0, 1, 1); } /* headspin: accelerate... */
+  65%    { transform: translate(0%, 0%)   rotate(540deg) rotateY(1080deg) scale(1, 1); animation-timing-function: ease-out; }  /* ...and LOCK */
+  66.5%  { transform: translate(0%, 1%)   rotate(560deg) rotateY(1080deg) scale(1.06, .94); animation-timing-function: ease-in-out; }
+  69%    { transform: translate(0%, 0%)   rotate(555deg) rotateY(1080deg) scale(1, 1); }
+  83%    { transform: translate(0%, 0%)   rotate(555deg) rotateY(1080deg) scale(1, 1); animation-timing-function: ease-out; }  /* freeze hold */
+  88%    { transform: translate(0%, -16%) rotate(640deg) rotateY(1080deg) scale(1, 1); animation-timing-function: ease-in; }  /* kip-up */
+  93.5%  { transform: translate(0%, -3%)  rotate(720deg) rotateY(1080deg) scale(.95, 1.06); animation-timing-function: ease-out; }
+  97%    { transform: translate(0%, 1.5%) rotate(720deg) rotateY(1080deg) scale(1.08, .92); animation-timing-function: ease-out; }
+  100%   { transform: translate(0%, 0%)   rotate(720deg) rotateY(1080deg) scale(1, 1); }
+}
+/* 2 beats @ 95 BPM: bounce on the beat, arms stay crossed (held by fill-mode) */
+@keyframes bigom-loop {
+  0%, 50%, 100% { transform: translate(0%, 0%) rotate(0deg) rotateY(0deg) scale(1, 1); }
+  12%, 62%      { transform: translate(0%, 1.6%) rotate(0deg) rotateY(0deg) scale(1.025, .97); }
+}
+@keyframes bigom-nod {
+  0%, 50%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  12%           { transform: translate(0px, 1.5px) rotate(4deg); }
+  62%           { transform: translate(0px, 1.5px) rotate(-4deg); }
+}
+/* positive rotate swings a hanging limb toward screen-left */
+@keyframes bigom-legL {
+  0%, 8%, 100% { transform: rotate(0deg); }
+  4.17%  { transform: rotate(-18deg); }
+  12%    { transform: rotate(14deg); }
+  16%    { transform: rotate(8deg); }
+  19.67%, 65% { transform: rotate(52deg); }   /* V split through windmill + headspin */
+  66.5%, 83%  { transform: rotate(72deg); }   /* freeze: leg kicked out */
+  88%    { transform: rotate(-12deg); }
+  93.5%  { transform: rotate(0deg); }
+}
+@keyframes bigom-legR {
+  0%, 8%, 100% { transform: rotate(0deg); }
+  4.17%  { transform: rotate(-10deg); }
+  12%    { transform: rotate(18deg); }
+  16%    { transform: rotate(-8deg); }
+  19.67%, 65% { transform: rotate(-52deg); }
+  66.5%, 83%  { transform: rotate(-128deg); } /* freeze: leg folded back */
+  88%    { transform: rotate(12deg); }
+  93.5%  { transform: rotate(0deg); }
+}
+@keyframes bigom-armL {
+  0%     { transform: rotate(0deg); }
+  4.17%  { transform: rotate(-35deg); }
+  8%     { transform: rotate(15deg); }
+  12%    { transform: rotate(-35deg); }
+  16%    { transform: rotate(30deg); }
+  19.67%, 38% { transform: rotate(105deg); }
+  40%, 65%    { transform: rotate(85deg); }   /* hands-free headspin */
+  66.5%, 83%  { transform: rotate(-55deg); }  /* arms crossed */
+  88%    { transform: rotate(75deg); }
+  93.5%  { transform: rotate(40deg); }
+  97%, 100% { transform: rotate(-55deg); }
+}
+@keyframes bigom-armR {
+  0%     { transform: rotate(0deg); }
+  4.17%  { transform: rotate(35deg); }
+  8%     { transform: rotate(-15deg); }
+  12%    { transform: rotate(35deg); }
+  16%    { transform: rotate(-30deg); }
+  19.67%, 38% { transform: rotate(-105deg); }
+  40%, 65%    { transform: rotate(-85deg); }
+  66.5%, 83%  { transform: rotate(55deg); }
+  88%    { transform: rotate(-75deg); }
+  93.5%  { transform: rotate(-40deg); }
+  97%, 100% { transform: rotate(55deg); }
+}
+@keyframes bigom-head {
+  0%, 8%, 16%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  4.17% { transform: translate(0px, 0px) rotate(-7deg); }
+  12%   { transform: translate(0px, 0px) rotate(7deg); }
+  66.5% { transform: translate(0px, 0px) rotate(-6deg); }
+  69%, 83% { transform: translate(0px, 0px) rotate(-3deg); }
+}
+@keyframes show-until-65 { 0% { opacity: 1; } 65%, 100% { opacity: 0; } }
+@keyframes show-from-65  { 0% { opacity: 0; } 65%, 100% { opacity: 1; } }
+@keyframes bigom-fx-spin {
+  0%, 38%  { opacity: 0; stroke-dashoffset: 0; }
+  40%      { opacity: 1; }
+  64%      { opacity: 1; }
+  65%, 100%{ opacity: 0; stroke-dashoffset: -420; }
+}
+@keyframes bigom-fx-burst {
+  0%, 64.9% { opacity: 0; transform: scale(.55); }
+  65%       { opacity: 1; transform: scale(.7); }
+  74%       { opacity: 0; transform: scale(1.25); }
+  100%      { opacity: 0; transform: scale(1.25); }
+}
+@keyframes bigom-fx-sticker {
+  0%, 64.9% { opacity: 0; transform: scale(0) rotate(-24deg); }
+  67.5%     { opacity: 1; transform: scale(1.25) rotate(-6deg); animation-timing-function: ease-in-out; }
+  70%, 82%  { opacity: 1; transform: scale(1) rotate(-10deg); }
+  86%, 100% { opacity: 0; transform: scale(.4) rotate(-10deg); }
+}
+@keyframes bigom-flash {
+  0%, 64.9% { opacity: 0; transform: scale(.4); }
+  65.5%     { opacity: .95; transform: scale(.9); }
+  72%, 100% { opacity: 0; transform: scale(1.3); }
+}
+@keyframes bigom-shadow {
+  0%, 100%   { transform: scale(1, 1); opacity: 1; }
+  16%        { transform: scale(1.15, 1); opacity: 1; }
+  19.67%, 34.33% { transform: scale(1.45, 1.1); opacity: .9; }
+  38%, 65%   { transform: scale(.75, .9); opacity: 1; }
+  88%        { transform: scale(.55, .7); opacity: .5; }
+  97%        { transform: scale(1.15, 1); opacity: 1; }
+}
+
+/* ===================== LOSE: beanie slips over the eyes, slump, dizzy stars ===================== */
+.stage[data-char="bigom"][data-state="lose"] .rig { transform-origin: 50% 93%; animation: bigom-lose 1s ease-out both, sway 2.4s 1s ease-in-out infinite; }
+.stage[data-char="bigom"][data-state="lose"] .beanie { animation: bigom-hat-slip .5s .25s cubic-bezier(.5, 1.6, .6, 1) both; }
+.stage[data-char="bigom"][data-state="lose"] .armL { animation: droop-L .6s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .armR { animation: droop-R .6s ease-out both; }
+.stage[data-char="bigom"][data-state="lose"] .face-a { opacity: 0; }
+.stage[data-char="bigom"][data-state="lose"] .face-c { opacity: 1; }
+.stage[data-state="lose"] .fx-dizzy { opacity: 1; }
+.stage[data-state="lose"] .fx-dizzy .star { animation: orbit 1.2s linear infinite; }
+.stage[data-state="lose"] .fx-dizzy .star:nth-child(2) { animation-delay: -.4s; }
+.stage[data-state="lose"] .fx-dizzy .star:nth-child(3) { animation-delay: -.8s; }
+@keyframes bigom-lose {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  20%  { transform: translate(0%, -3%) rotate(0deg) scale(.96, 1.05); }
+  55%  { transform: translate(0%, 2%) rotate(-4deg) scale(1.06, .9); }
+  100% { transform: translate(0%, 1%) rotate(-3deg) scale(1.03, .95); }
+}
+@keyframes sway {
+  0%, 100% { transform: translate(0%, 1%) rotate(-3deg) scale(1.03, .95); }
+  50%      { transform: translate(0%, 1%) rotate(3deg) scale(1.03, .95); }
+}
+@keyframes bigom-hat-slip { from { transform: translate(0px, 0px) rotate(0deg); } to { transform: translate(-2px, 11px) rotate(-8deg); } }
+@keyframes droop-L { to { transform: rotate(-12deg); } }
+@keyframes droop-R { to { transform: rotate(12deg); } }
+/* shared dizzy orbit: an ellipse traced with translate only, so the stars are never squashed */
+@keyframes orbit {
+  0%    { transform: translate(0px, 6px)    scale(1); }
+  12.5% { transform: translate(-15px, 4px)  scale(.95); }
+  25%   { transform: translate(-21px, 0px)  scale(.85); }
+  37.5% { transform: translate(-15px, -4px) scale(.7); }
+  50%   { transform: translate(0px, -6px)   scale(.6); }
+  62.5% { transform: translate(15px, -4px)  scale(.7); }
+  75%   { transform: translate(21px, 0px)   scale(.85); }
+  87.5% { transform: translate(15px, 4px)   scale(.95); }
+  100%  { transform: translate(0px, 6px)    scale(1); }
+}
+
+/* ===================== reduced motion: one source of truth on <html data-motion> ===================== */
+[data-motion="reduce"] .stage *, [data-motion="reduce"] .stage { animation: none !important; }
+[data-motion="reduce"] .stage[data-state="win"] .face-a { opacity: 0; }
+[data-motion="reduce"] .stage[data-state="win"] .face-b { opacity: 1; }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .armL { transform: rotate(-55deg); }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="win"] .armR { transform: rotate(55deg); }
+[data-motion="reduce"] .stage[data-state="win"] .fx-sticker { opacity: 1; transform: rotate(-10deg); animation: rm-fade .4s ease-out both !important; }
+[data-motion="reduce"] .stage[data-state="lose"] .fx-dizzy { opacity: 0; }
+[data-motion="reduce"] .stage[data-char="bigom"][data-state="lose"] .beanie { transform: translate(-2px, 11px) rotate(-8deg); }
+@keyframes rm-fade { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<template id="tpl-bigom">
+<div class="stage" data-char="bigom" data-state="idle">
+  <div class="shadow"></div>
+  <div class="flash"></div>
+  <div class="rig">
+    <svg class="ch ch-bigom" viewBox="0 0 120 120" role="img" aria-label="비곰">
+      <!-- legs: behind the torso. joint = hip -->
+      <g transform="translate(51 92)"><g class="p legL"><g transform="translate(-51 -92)">
+        <rect class="o suit" x="45" y="89" width="12" height="15" rx="6"/>
+        <rect class="o shoe" x="40.5" y="101" width="17.5" height="10" rx="5"/>
+        <path d="M42.5 108.4H56" stroke="var(--sole)" stroke-width="2" stroke-linecap="round"/>
+      </g></g></g>
+      <g transform="translate(69 92)"><g class="p legR"><g transform="translate(-69 -92)">
+        <rect class="o suit" x="63" y="89" width="12" height="15" rx="6"/>
+        <rect class="o shoe" x="62" y="101" width="17.5" height="10" rx="5"/>
+        <path d="M64 108.4H77.5" stroke="var(--sole)" stroke-width="2" stroke-linecap="round"/>
+      </g></g></g>
+
+      <!-- torso (static; whole-body motion lives on the HTML wrapper) -->
+      <g class="body">
+        <path class="o suit" d="M41 83Q41 69 60 69Q79 69 79 83V88Q79 100 60 100Q41 100 41 88Z"/>
+        <path class="suit-sh" d="M43 90.5Q60 96.5 77 90.5Q76 98.3 60 98.3Q44 98.3 43 90.5Z"/>
+        <path d="M60 72.5V97" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>
+        <path d="M50.5 79l4.5 3-4.5 3M69.5 79l-4.5 3 4.5 3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- arms: joint = shoulder. armR is drawn last so crossed arms overlap correctly -->
+      <g transform="translate(44 77)"><g class="p armL"><g transform="translate(-44 -77)">
+        <rect class="o suit" x="38.5" y="73.5" width="11" height="17" rx="5.5"/>
+        <rect class="cuff" x="40" y="86" width="8" height="3.2" rx="1"/>
+        <circle class="o fur" cx="44" cy="93.5" r="5.5"/>
+      </g></g></g>
+      <g transform="translate(76 77)"><g class="p armR"><g transform="translate(-76 -77)">
+        <rect class="o suit" x="70.5" y="73.5" width="11" height="17" rx="5.5"/>
+        <rect class="cuff" x="72" y="86" width="8" height="3.2" rx="1"/>
+        <circle class="o fur" cx="76" cy="93.5" r="5.5"/>
+      </g></g></g>
+
+      <!-- head: joint = neck -->
+      <g transform="translate(60 70)"><g class="p head"><g transform="translate(-60 -70)">
+        <ellipse class="o fur" cx="60" cy="46" rx="30" ry="25"/>
+        <g transform="translate(60 40)"><g class="p beanie"><g transform="translate(-60 -40)">
+          <path class="o hat" d="M30.5 41C30.5 22 44 13.5 60 13.5S89.5 22 89.5 41Z"/>
+          <path d="M40 27Q45 20.5 53 18.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>
+          <rect class="o hat-band" x="28.5" y="35" width="63" height="9.5" rx="4.75"/>
+          <path d="M38 37v5M46 37v5M54 37v5M62 37v5M70 37v5M78 37v5M86 37v4" stroke="var(--ink)" stroke-width="1.3" stroke-linecap="round" opacity=".22"/>
+          <!-- ears poke through holes in the beanie -->
+          <circle class="o fur" cx="37.5" cy="22.5" r="8.2"/><circle class="fur-in" cx="37.5" cy="22.5" r="3.8"/>
+          <circle class="o fur" cx="82.5" cy="22.5" r="8.2"/><circle class="fur-in" cx="82.5" cy="22.5" r="3.8"/>
+        </g></g></g>
+        <ellipse class="cheek" cx="40.5" cy="62" rx="4.4" ry="2.6"/>
+        <ellipse class="cheek" cx="79.5" cy="62" rx="4.4" ry="2.6"/>
+        <ellipse class="o2 muzzle" cx="60" cy="62.5" rx="12.5" ry="8.5"/>
+        <path class="ink" d="M55.5 58.4Q60 56 64.5 58.4Q63.2 62 60 62.6Q56.8 62 55.5 58.4Z"/>
+        <ellipse cx="58.3" cy="58.3" rx="1.4" ry=".8" fill="#fff" opacity=".7"/>
+        <!-- face A: idle / fighting -->
+        <g class="face-a">
+          <path class="ln" d="M43 48.6Q47.5 46.4 52 47.6M77 48.6Q72.5 46.4 68 47.6"/>
+          <ellipse class="eye ink" cx="48" cy="54" rx="3.4" ry="4.2"/>
+          <ellipse class="eye ink" cx="72" cy="54" rx="3.4" ry="4.2"/>
+          <circle cx="46.9" cy="52.4" r="1.25" fill="#fff"/><circle cx="70.9" cy="52.4" r="1.25" fill="#fff"/>
+          <path class="ln" d="M60 62.6V64.6M55.5 64Q57.8 66.8 60 64.6Q62.2 66.8 64.5 64" stroke-width="2"/>
+        </g>
+        <!-- face B: victory (wink + grin) -->
+        <g class="face-b">
+          <path class="ln" d="M43 47.6Q47.5 45.4 52 46.6M77 48.6Q72.5 46.4 68 47.6"/>
+          <path class="ln" d="M44.4 55.2Q48 50.6 51.6 55.2" stroke-width="2.8"/>
+          <ellipse class="ink" cx="72" cy="54" rx="3.4" ry="4.2"/><circle cx="70.9" cy="52.4" r="1.25" fill="#fff"/>
+          <path d="M54 64.2Q60 72.4 66 64.2Z" fill="var(--mouth)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M57.2 67.8Q60 70.2 62.8 67.8Q60 66.6 57.2 67.8Z" fill="var(--tongue)"/>
+        </g>
+        <!-- face C: lose (X eyes, wobbly mouth) -->
+        <g class="face-c">
+          <path class="ln" d="M45 51l6 6M51 51l-6 6M69 51l6 6M75 51l-6 6"/>
+          <path class="ln" d="M54 66q1.5-2 3 0t3 0 3 0 3 0" stroke-width="2"/>
+        </g>
+      </g></g></g>
+    </svg>
+  </div>
+
+  <!-- effects: NOT inside the rig, so they don't spin with the body -->
+  <svg class="fx" viewBox="0 0 120 120" aria-hidden="true">
+    <g class="fx-spin" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="14 10">
+      <ellipse cx="60" cy="72" rx="34" ry="7"/>
+      <ellipse cx="60" cy="96" rx="26" ry="5.5" stroke="var(--ink)" stroke-width="2" opacity=".35"/>
+      <ellipse cx="60" cy="46" rx="24" ry="5" stroke-dasharray="8 12"/>
+    </g>
+    <g transform="translate(60 63)"><g class="p fx-burst"><g transform="translate(-60 -63)"
+       stroke="#FFC83D" stroke-width="3.2" stroke-linecap="round">
+      <path d="M60 9V19M60 107V117M6 63H16M104 63H114M22 25l7 7M98 25l-7 7M22 101l7-7M98 101l-7-7"/>
+    </g></g></g>
+    <g transform="translate(94 22)"><g class="p fx-sticker">
+      <rect x="-19" y="-10" width="38" height="20" rx="10" fill="#fff" stroke="var(--ink)" stroke-width="2.4"/>
+      <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="900" fill="#2F6BFF"
+            font-family="system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif">얼음!</text>
+    </g></g>
+    <g class="fx-dizzy" transform="translate(60 14)" fill="#FFC83D" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round">
+      <path class="star" d="M0-5l1.5 3.2 3.5.4-2.6 2.4.7 3.5L0 2.8l-3.1 1.7.7-3.5-2.6-2.4 3.5-.4Z"/>
+      <path class="star" d="M0-5l1.5 3.2 3.5.4-2.6 2.4.7 3.5L0 2.8l-3.1 1.7.7-3.5-2.6-2.4 3.5-.4Z"/>
+      <path class="star" d="M0-5l1.5 3.2 3.5.4-2.6 2.4.7 3.5L0 2.8l-3.1 1.7.7-3.5-2.6-2.4 3.5-.4Z"/>
+    </g>
+  </svg>
+</div>
+</template>
+
+<div id="sheet" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px"></div>
+<script>
+// test harness: render the win timeline frozen at several times (+ idle, lose, 48px)
+const tpl = document.getElementById('tpl-bigom');
+const sheet = document.getElementById('sheet');
+function cell(state, t, size, label) {
+  const box = document.createElement('div');
+  box.style.cssText = 'display:flex;flex-direction:column;align-items:center;font:11px system-ui;background:#E9DFC8;border-radius:8px;padding:4px';
+  const st = tpl.content.firstElementChild.cloneNode(true);
+  st.style.setProperty('--size', size + 'px');
+  st.dataset.state = state;
+  box.append(st, Object.assign(document.createElement('div'), { textContent: label }));
+  sheet.append(box);
+  return [st, t];
+}
+const cells = [];
+const q = new URLSearchParams(location.search);
+if (q.has('alt')) document.body.classList.add('alt');
+if (q.has('rm')) document.documentElement.dataset.motion = 'reduce';
+cells.push(cell('idle', 0, 160, 'idle'));
+for (const t of (q.get('t') || '0.10,0.29,0.38,0.47,0.65,0.83,1.10,1.40,1.60,1.80,2.12,2.33,2.40,2.55').split(',').map(Number)) cells.push(cell('win', t, 160, 'win ' + t.toFixed(2) + 's'));
+cells.push(cell('lose', 1.5, 160, 'lose 1.5s'));
+cells.push(cell('idle', 0, 48, '48px'));
+cells.push(cell('win', 2.4, 48, '48 win'));
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  for (const [st, t] of cells) for (const a of st.getAnimations({ subtree: true })) { a.pause(); a.currentTime = t * 1000; }
+  document.title = 'ready';
+}));
+</script>
+</body>
+</html>

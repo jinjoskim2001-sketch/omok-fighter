@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>돌주먹 gate harness</title>
+<meta name="theme-color" content="#17121F">
+<meta name="color-scheme" content="dark">
+<!--
+  Mounts one gate screen with a faked environment so it can be looked at on a desktop or shot
+  with tools/shot.mjs at phone size.
+    ?mode=install
+    ?mode=install&safari=27          (Safari major version: 26 = ··· button, 27 = hold the address bar;
+                                      without it the version is read from the real user agent,
+                                      and an unreadable one shows both ways)
+    ?mode=install&browser=other      (iOS browser that is not Safari)
+    &ingame=1                        (the guide as opened from the menu over the running app)
+    ?mode=escape&app=kakaotalk       (line | instagram | threads | facebook | naver | daum | other)
+    ?mode=notice&failed=1            (index.html's load watchdog notice; without failed = slow)
+    ?mode=pill                       (Android install pill)
+    ?mode=sw                         (register ../sw.js and list what it precached; this page
+                                      registers directly, so it works on localhost too)
+    &audit=1                         (print tap-target heights and overflow checks)
+    &click=play|copy|open            (press that control once)
+  Add &bare=1 to skip css/app.css and see the gate with its own fallbacks only.
+  The automatic KakaoTalk / LINE hand-off is always off here.
+-->
+<style>
+  html, body { margin: 0; background: #17121F; }
+</style>
+<link rel="stylesheet" href="../css/gate.css">
+</head>
+<body>
+<div id="gateRoot"></div>
+<script type="module">
+  import { mountGate, mountInstallPill } from '../js/install.js';
+
+  const q = new URLSearchParams(location.search);
+  if (!q.has('bare')) {
+    // Loaded before gate.css in the real page; order does not matter for these selectors.
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '../css/app.css';
+    document.head.prepend(link);
+  }
+
+  const mode = q.get('mode') || 'install';
+  const root = document.getElementById('gateRoot');
+  const log = (msg) => {
+    document.title = msg;
+    document.body.insertAdjacentHTML('beforeend',
+      `<p style="position:fixed;z-index:99;left:8px;top:8px;margin:0;font:12px monospace;color:#B6FF4D">${msg} · gateRoot children: ${root.childElementCount}</p>`);
+  };
+
+  if (mode === 'sw') {
+    const out = document.createElement('pre');
+    out.style.cssText = 'margin:0;padding:16px;color:#BBAFCF;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap';
+    document.body.append(out);
+    const say = (line) => { out.textContent += `${line}\n`; };
+    try {
+      const reg = await navigator.serviceWorker.register('../sw.js', { updateViaCache: 'none' });
+      say(`registered, scope ${reg.scope}`);
+      await navigator.serviceWorker.ready;
+      say(`worker state: ${reg.active ? reg.active.state : 'not active'}`);
+      for (const name of await caches.keys()) {
+        const keys = await (await caches.open(name)).keys();
+        say(`\n${name} (${keys.length})`);
+        keys.forEach((k) => say(`  ${k.url.replace(location.origin, '')}`));
+      }
+      const hit = await caches.match(new URL('../?play=1', location.href).href, { ignoreSearch: true });
+      say(`\n./?play=1 found in cache: ${Boolean(hit)}`);
+      say('\nTo remove: DevTools → Application → Service workers → Unregister');
+    } catch (err) {
+      say(`FAILED: ${err && err.message}`);
+    }
+  } else if (mode === 'pill') {
+    mountInstallPill(document.body);
+    document.querySelector('.gate-pill').hidden = false;
+  } else if (mode === 'notice') {
+    // The same markup index.html's load watchdog writes.
+    const failed = q.get('failed') === '1';
+    const notice = document.createElement('section');
+    notice.className = 'gate gate--notice';
+    notice.setAttribute('role', 'alert');
+    notice.innerHTML =
+      '<div class="gate__inner"><header class="gate__head">' +
+      `<p class="gate__headline">${failed ? '불러오지 못했어요' : '불러오는 중이에요'}</p>` +
+      `<p class="gate__lead">${failed ? '연결을 확인하고<br>다시 시도해 주세요.' : '연결이 느린 것 같아요.<br>조금 더 기다리거나 다시 시도해 주세요.'}</p>` +
+      '</header><button type="button" class="gate-btn gate-btn--primary">다시 시도</button></div>';
+    root.append(notice);
+  } else {
+    const env = {
+      standalone: false,
+      ios: true,
+      android: false,
+      safari: mode === 'install' && q.get('browser') !== 'other',
+      inApp: mode === 'escape' ? (q.get('app') || 'kakaotalk') : null,
+    };
+    const opts = { auto: false, inGame: q.get('ingame') === '1', onPlayHere: () => log('onPlayHere') };
+    if (/^\d+$/.test(q.get('safari') || '')) {
+      opts.ua = `Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${q.get('safari')}.0 Mobile/15E148 Safari/604.1`;
+    } else if (q.get('safari') === 'unknown') {
+      opts.ua = 'Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1';
+    }
+    mountGate(root, mode, env, opts);
+
+    // ?click=play|copy|open presses that control once, to see what the handlers do.
+    if (q.has('click')) {
+      const el = root.querySelector(`[data-gate-act="${q.get('click')}"]`);
+      if (el) {
+        if (q.get('click') === 'open') el.addEventListener('click', (e) => { e.preventDefault(); log(`open → ${el.getAttribute('href')}`); });
+        el.click();
+      }
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    }
+  }
+
+  // ?audit=1 prints the things a screenshot cannot prove: tap-target heights, clipped or
+  // off-screen elements, and whether the screen has to scroll.
+  if (q.has('audit')) {
+    await document.fonts.ready;
+    await new Promise((r) => setTimeout(r, 700));   // after the entrance animation
+    const targets = [...root.querySelectorAll('a, button, input')];
+    const short = targets.filter((el) => el.getBoundingClientRect().height < 44);
+    const bad = [];
+    for (const el of root.querySelectorAll('.gate *')) {
+      if (el.closest('svg') || el.matches('.gate-copy__url')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) continue;
+      // (.gate-art itself is skipped: the animated ring around the lit button is meant to be
+      // cut off by the tile edge and would read as clipping.)
+      const clipped = !el.matches('.gate-art') && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible';
+      const outside = r.left < -0.5 || r.right > innerWidth + 0.5;
+      // An illustration tile clips on purpose; its children must still fit inside it.
+      const art = el.closest('.gate-art');
+      const a = art && art !== el ? art.getBoundingClientRect() : null;
+      const spills = a && (r.left < a.left - 0.5 || r.right > a.right + 0.5 || r.top < a.top - 0.5 || r.bottom > a.bottom + 0.5);
+      if (clipped || outside || spills) bad.push(`${el.className || el.tagName}${clipped ? ' clipped' : ''}${outside ? ' outside' : ''}${spills ? ' spills' : ''}`);
+    }
+    const heights = targets.map((el) => `${el.tagName.toLowerCase()}:${Math.round(el.getBoundingClientRect().height)}`).join(' ');
+    const lines = [
+      `${innerWidth}x${innerHeight}  content ${root.scrollHeight}px ${root.scrollHeight > innerHeight ? '(scrolls)' : '(fits)'}`,
+      `targets ${heights}  under 44: ${short.length}`,
+      `overflow: ${bad.length ? bad.join(' | ') : 'none'}`,
+    ];
+    console.log(`[audit] ${lines.join(' / ')}`);
+    const panel = document.createElement('pre');
+    panel.textContent = lines.join('\n');
+    panel.style.cssText = 'position:fixed;z-index:99;left:0;right:0;bottom:0;margin:0;padding:6px 8px;background:rgba(0,0,0,.85);color:#B6FF4D;font:10px/1.4 ui-monospace,monospace;white-space:pre-wrap';
+    document.body.append(panel);
+  }
+</script>
+</body>
+</html>

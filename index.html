@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>돌주먹 — 오목 파이터</title>
+<meta name="description" content="친구랑 한 폰으로, 캐릭터 골라 붙는 오목 한 판. 홈 화면에 추가하면 앱처럼!">
+<!-- Android only: Safari 26+ tints its bars from the page background below, not from this. -->
+<meta name="theme-color" content="#17121F">
+<meta name="color-scheme" content="dark">
+<!-- First paint in the app colour (no white flash) and what iOS samples for the status bar. -->
+<style>html,body{background:#17121F}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="돌주먹">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="돌주먹">
+<meta property="og:url" content="https://jinjoskim2001-sketch.github.io/omok-fighter/">
+<meta property="og:title" content="돌주먹 — 오목 파이터">
+<meta property="og:description" content="친구랑 한 폰으로 붙는 캐릭터 오목. 링크 열고 홈 화면에 추가하면 끝!">
+<meta property="og:image" content="https://jinjoskim2001-sketch.github.io/omok-fighter/icons/og-800x400.png?v=1">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="400">
+<meta name="twitter:card" content="summary_large_image">
+<!-- The display face is self-hosted (no font CDN): start it together with the stylesheets. -->
+<link rel="preload" href="fonts/bhs.woff2" as="font" type="font/woff2" crossorigin>
+<!-- The static module graph of js/main.js, so the browser fetches it in one go instead of one
+     import level per round trip. Generated: tests/integration.test.js prints this list when the
+     graph changes. -->
+<link rel="modulepreload" href="js/audio.js">
+<link rel="modulepreload" href="js/storage.js">
+<link rel="modulepreload" href="js/install.js">
+<link rel="modulepreload" href="js/haptics.js">
+<link rel="modulepreload" href="js/rules.js">
+<link rel="modulepreload" href="js/match.js">
+<link rel="modulepreload" href="js/ui/ctx.js">
+<link rel="modulepreload" href="js/ui/dom.js">
+<link rel="modulepreload" href="js/ui/widgets.js">
+<link rel="modulepreload" href="js/ui/sheet.js">
+<link rel="modulepreload" href="js/ui/toast.js">
+<link rel="modulepreload" href="js/ui/router.js">
+<link rel="modulepreload" href="js/chars/bulttong.js">
+<link rel="modulepreload" href="js/chars/nyangja.js">
+<link rel="modulepreload" href="js/chars/bigom.js">
+<link rel="modulepreload" href="js/chars/beonjjeok.js">
+<link rel="modulepreload" href="js/chars/jaepjaep.js">
+<link rel="modulepreload" href="js/chars/ppibik.js">
+<link rel="modulepreload" href="js/chars/kkakkung.js">
+<link rel="modulepreload" href="js/chars/taenggeul.js">
+<link rel="modulepreload" href="js/characters.js">
+<link rel="modulepreload" href="js/particles.js">
+<link rel="modulepreload" href="js/fighter.js">
+<link rel="modulepreload" href="js/ui/title.js">
+<link rel="modulepreload" href="js/themes.js">
+<link rel="modulepreload" href="js/ui/flow.js">
+<link rel="modulepreload" href="js/ui/setup.js">
+<link rel="modulepreload" href="js/ui/menu.js">
+<link rel="modulepreload" href="js/ui/select.js">
+<link rel="modulepreload" href="js/ui/vs.js">
+<link rel="modulepreload" href="js/ui/hud.js">
+<link rel="modulepreload" href="js/board.js">
+<link rel="modulepreload" href="js/ai/engine.js">
+<link rel="modulepreload" href="js/ai-client.js">
+<link rel="modulepreload" href="js/wake.js">
+<link rel="modulepreload" href="js/ui/battle.js">
+<link rel="modulepreload" href="js/ui/results.js">
+<link rel="modulepreload" href="js/ui/settings.js">
+<link rel="modulepreload" href="js/ui/records.js">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/battle.css">
+<link rel="stylesheet" href="css/fighters.css">
+<link rel="stylesheet" href="css/chars/bulttong.css">
+<link rel="stylesheet" href="css/chars/nyangja.css">
+<link rel="stylesheet" href="css/chars/bigom.css">
+<link rel="stylesheet" href="css/chars/beonjjeok.css">
+<link rel="stylesheet" href="css/chars/jaepjaep.css">
+<link rel="stylesheet" href="css/chars/ppibik.css">
+<link rel="stylesheet" href="css/chars/kkakkung.css">
+<link rel="stylesheet" href="css/chars/taenggeul.css">
+<link rel="stylesheet" href="css/gate.css">
+</head>
+<body>
+<script>
+// The installed app is laid out from 100vh, a browser tab from the dynamic viewport
+// (css/app.css, --vh). CSS sees the installed app through the display-mode media feature;
+// this adds the older iOS signal so that app can never be mistaken for a tab.
+if (navigator.standalone === true) document.documentElement.setAttribute('data-display', 'standalone');
+</script>
+<!-- DOM contract (docs/SPEC.md §7–8): these roots must exist and #sheetRoot/#toastRoot/#gateRoot stay empty in HTML -->
+<div id="app"></div>
+<div id="sheetRoot"></div>
+<div id="toastRoot"></div>
+<div id="gateRoot"></div>
+<script>
+// Touch guards. Inline and classic on purpose: they must hold from the first frame, before the
+// game modules have loaded (js/main.js adds the same once it runs; doubling them is harmless).
+(function () {
+  function block(e) { e.preventDefault(); }
+  // Safari ignores user-scalable=no in a tab, so stop the pinch by hand.
+  document.addEventListener('gesturestart', block, { passive: false });
+  document.addEventListener('gesturechange', block, { passive: false });
+  // No "copy / look up" callout from a long press on the board or a fighter.
+  var app = document.getElementById('app');
+  if (app) app.addEventListener('contextmenu', block);
+  // An (empty) touchstart listener is what makes :active styles apply on iOS.
+  document.addEventListener('touchstart', function () {}, { passive: true });
+})();
+</script>
+<script type="module" src="js/main.js"></script>
+<script>
+// Load watchdog. The game, the install guide and every message live behind js/main.js and
+// its imports. If one of those files cannot be fetched, nothing ever runs and the page would
+// stay an empty purple screen, with no way to reload in the installed app.
+// - `error` on the script element fires when main.js or any module it imports fails to load.
+// - A request that just hangs fires nothing, so a timer covers it. That notice goes away by
+//   itself if the modules do arrive (`load` fires once main.js has run).
+// This script runs while the page is still being parsed, before either event can fire.
+(function () {
+  var script = document.querySelector('script[type="module"][src="js/main.js"]');
+  var root = document.getElementById('gateRoot');
+  if (!script || !root) return;
+  var SLOW_MS = 12000;
+  var notice = null;
+
+  function hide() {
+    if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
+    notice = null;
+  }
+
+  function show(failed) {
+    hide();
+    notice = document.createElement('section');
+    notice.className = 'gate gate--notice';
+    notice.setAttribute('role', 'alert');
+    notice.innerHTML =
+      '<div class="gate__inner"><header class="gate__head">' +
+      '<p class="gate__headline">' + (failed ? '불러오지 못했어요' : '불러오는 중이에요') + '</p>' +
+      '<p class="gate__lead">' + (failed
+        ? '연결을 확인하고<br>다시 시도해 주세요.'
+        : '연결이 느린 것 같아요.<br>조금 더 기다리거나 다시 시도해 주세요.') + '</p>' +
+      '</header><button type="button" class="gate-btn gate-btn--primary">다시 시도</button></div>';
+    notice.querySelector('button').addEventListener('click', function () { location.reload(); });
+    root.appendChild(notice);
+  }
+
+  var timer = setTimeout(function () { show(false); }, SLOW_MS);
+  script.addEventListener('load', function () { clearTimeout(timer); hide(); });
+  script.addEventListener('error', function () { clearTimeout(timer); show(true); });
+})();
+</script>
+</body>
+</html>

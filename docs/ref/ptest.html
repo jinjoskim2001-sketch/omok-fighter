@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#1E1A2B;height:100vh}</style></head><body>
+<script type="module">
+import { burst, release } from './particles.js';
+burst({ x: 150, y: 200, n: 28 });
+burst({ x: 400, y: 200, n: 30, kind: 'glow', colors: ['#FFB020', '#FF5A36', '#FFE97A'], gravity: -120, speed: [40, 140], blend: 'lighter', size: [14, 26] });
+burst({ x: 650, y: 150, n: 40, kind: 'confetti', colors: ['#FF4FA3', '#B6FF4D', '#3CE0FF', '#FFD84D'], speed: [180, 320], angle: [200, 340], gravity: 420 });
+burst({ x: 850, y: 200, n: 14, kind: 'bolt', colors: ['#3CE0FF', '#FFFFFF'], speed: [160, 260], gravity: 0, blend: 'lighter' });
+burst({ x: 400, y: 450, n: 16, kind: 'heart', colors: ['#FF4FA3'], gravity: -80, speed: [60, 160] });
+burst({ x: 650, y: 450, n: 16, kind: 'drop', colors: ['#FFD45E', '#9C4A1A'], gravity: 500, speed: [120, 220], angle: [200, 340] });
+setTimeout(() => { document.title = 'ready'; }, 260);
+</script></body></html>

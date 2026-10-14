@@ -1,0 +1,14 @@
+import { createRequire } from 'node:module';
+const require = createRequire('/opt/node22/lib/node_modules/');
+const pw = require('playwright');
+const [,, file, out, engine = 'chromium', extra = ''] = process.argv;
+const b = await pw[engine].launch();
+const p = await b.newPage({ viewport: { width: 1040, height: 760 }, deviceScaleFactor: 2 });
+p.on('console', m => console.log('console:', m.text()));
+p.on('pageerror', e => console.log('pageerror:', e.message));
+await p.goto((file.startsWith('http') ? file : 'file://' + file) + extra);
+await p.waitForFunction(() => document.title === 'ready', null, { timeout: 5000 }).catch(e => console.log('timeout'));
+await p.waitForTimeout(300);
+await p.screenshot({ path: out, fullPage: true });
+console.log(engine, await b.version());
+await b.close();

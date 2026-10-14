@@ -1,0 +1,1095 @@
+/* Gate screens: the install guide (iOS Safari tab) and the in-app-browser escape, plus the
+   load notice from index.html and the Android install pill. Mounted into #gateRoot by
+   js/install.js. Look (SPEC §9): street arcade × sticker — ink outlines, thick borders with an
+   ink drop "press" shadow, Black Han Sans for anything shouted.
+   Every token has a literal fallback because this sheet must render correctly even if
+   css/app.css failed to load (the load notice is exactly that case). */
+
+@font-face {
+  /* Same face and file as css/app.css; repeated so the gate has its type on its own. */
+  font-family: 'BHS';
+  src: url('../fonts/bhs.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+#gateRoot,
+.gate-pill {
+  --gate-bg: var(--bg, #17121F);
+  --gate-card: var(--bg2, #221A2E);
+  --gate-tile: #120E19;
+  --gate-raise: var(--bg3, #2E2440);
+  --gate-ink: var(--ink, #2A1E2F);
+  --gate-line: var(--line, #3B2F4F);
+  --gate-paper: var(--paper, #FFF4DE);
+  --gate-text: var(--text, #FFF4DE);
+  --gate-dim: var(--dim, #BBAFCF);
+  --gate-faint: #8F84A3;
+  --gate-gold: var(--gold, #FFD23F);
+  --gate-red: var(--p1, #FF4757);
+  --gate-lime: var(--lime, #B6FF4D);
+  --gate-display: 'BHS', 'Black Han Sans', -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --gate-sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --gate-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --gate-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#gateRoot:empty {
+  display: none;
+}
+
+/* Opaque and full-bleed: iOS samples the bar tint from whatever fixed element touches the
+   top edge, so this layer must be the page colour, never transparent. */
+#gateRoot:not(:empty) {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background-color: var(--gate-bg);
+  /* the same halftone the app screens carry */
+  background-image: radial-gradient(rgba(255, 244, 222, 0.055) 1.1px, transparent 1.6px);
+  background-size: 12px 12px;
+  color: var(--gate-text);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.gate {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  min-height: 100%;
+  padding: max(18px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  font-family: var(--gate-sans);
+  font-size: 16px;
+  line-height: 1.45;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  /* Black Han Sans has one weight; a synthetic bold closes its counters */
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overflow: hidden;
+}
+
+/* Comic burst behind the hero, like the title screen. Static: the guide is read, not watched. */
+.gate::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 720px;
+  height: 720px;
+  margin: -250px 0 0 -360px;
+  border-radius: 50%;
+  /* 15 rays (an odd count): no ray lines up with the one opposite, so no straight seam runs
+     through the centre */
+  background: repeating-conic-gradient(from 3deg, rgba(255, 210, 63, 0.07) 0deg 10deg, transparent 10deg 24deg);
+  -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 30%, transparent 100%);
+  pointer-events: none;
+}
+
+.gate *,
+.gate *::before,
+.gate *::after {
+  box-sizing: border-box;
+}
+
+/* margin:auto (not justify-content) keeps the top reachable when the content is taller
+   than the viewport. */
+.gate__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+}
+
+/* ---- head: icon sticker, wordmark, tape, one line ---- */
+
+.gate__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 0;
+}
+
+.gate__plate {
+  margin-bottom: 12px;
+}
+
+.gate__word {
+  margin: 0;
+  font-family: var(--gate-display);
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--gate-gold);
+  -webkit-text-stroke: 0.16em var(--gate-ink);
+  paint-order: stroke fill;
+  text-shadow: 0 0.05em 0 var(--gate-ink), 0 0.09em 0 var(--gate-ink), 0.02em 0.12em 0 var(--gate-ink);
+  transform: rotate(-4deg);
+}
+
+.gate__tape {
+  margin: 10px 0 0;
+  padding: 4px 12px 5px;
+  border: 3px solid var(--gate-ink);
+  background: var(--gate-red);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--gate-ink);
+  font-family: var(--gate-display);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  transform: rotate(2deg);
+}
+
+.gate__headline {
+  margin: 14px 0 0;
+  font-family: var(--gate-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.18;
+  color: var(--gate-text);
+}
+
+.gate__lead {
+  max-width: 21em;
+  margin: 12px 0 0;
+  font-family: var(--gate-display);
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--gate-text);
+  text-wrap: balance;
+}
+
+.gate__lead--sub,
+.gate__headline + .gate__lead {
+  margin-top: 8px;
+  font-family: var(--gate-sans);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--gate-dim);
+}
+
+/* ---- the app icon: the real home-screen PNG, cut out like a sticker ---- */
+
+.gate-icon {
+  --s: 92px;
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--s);
+  height: var(--s);
+  border: 3px solid var(--gate-ink);
+  /* about the corner iOS gives home-screen icons */
+  border-radius: 23%;
+  background: var(--gate-bg);
+  box-shadow: 0 0 0 4px var(--gate-paper), 0 7px 0 4px var(--gate-ink);
+  overflow: hidden;
+}
+
+.gate-icon__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.gate-icon--hero {
+  transform: rotate(-6deg);
+}
+
+.gate-icon--mini {
+  --s: 44px;
+  border-width: 2px;
+  box-shadow: 0 0 0 2.5px var(--gate-paper), 0 4px 0 2.5px var(--gate-ink);
+  transform: rotate(-4deg);
+}
+
+.gate-icon--tiny {
+  --s: 18px;
+  border-width: 0;
+  border-radius: 24%;
+  box-shadow: none;
+}
+
+/* ---- steps ---- */
+
+.gate__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gate-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 10px 11px 14px;
+  border: 3px solid var(--gate-ink);
+  border-radius: 18px;
+  background: var(--gate-card);
+  box-shadow: 0 4px 0 var(--gate-ink), inset 0 0 0 1px rgba(255, 244, 222, 0.06);
+}
+
+.gate-step__num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 2.5px solid var(--gate-ink);
+  border-radius: 50%;
+  background: var(--gate-gold);
+  color: var(--gate-ink);
+  font-family: var(--gate-display);
+  font-size: 15px;
+  line-height: 1;
+  box-shadow: 0 2px 0 var(--gate-ink);
+}
+
+.gate-step__text h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 5px;
+  font-family: var(--gate-display);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--gate-text);
+}
+
+.gate-step__text p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--gate-dim);
+  /* keep-all breaks only between words, and the column beside the drawing is narrow: without
+     this a step often ends on one word alone (눌러요, 열려요, 열기). Safari 26 has it; older
+     browsers ignore it. */
+  text-wrap: pretty;
+}
+
+.gate-step__text b {
+  font-weight: 700;
+  color: var(--gate-text);
+}
+
+.gate-step__text .gate-step__note {
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--gate-faint);
+}
+
+.gate-step__text .gate-step__note b {
+  color: var(--gate-dim);
+}
+
+/* ---- illustrations: small drawings of the browser chrome, not screenshots ---- */
+
+.gate-art {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 128px;
+  height: 84px;
+  padding: 6px;
+  border: 2.5px solid var(--gate-ink);
+  border-radius: 13px;
+  background: var(--gate-tile);
+  color: rgba(255, 244, 222, 0.5);
+  font-family: var(--gate-sans);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.gate-g {
+  display: block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+/* a glyph inside a line of text ("⇧ 모양이에요"): the button's own picture, sized to the words */
+.gate-g--inline {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0 1px;
+  vertical-align: -0.25em;
+  color: var(--gate-dim);
+}
+
+.gate-art__bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gate-art__btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.gate-art__btn .gate-g {
+  width: 13px;
+  height: 13px;
+}
+
+.gate-art__btn--hot {
+  background: var(--gate-gold);
+  color: var(--gate-ink);
+  box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.24);
+}
+
+.gate-art__btn--hot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--gate-gold);
+  opacity: 0;
+  animation: gate-ping 2.2s var(--gate-ease) infinite;
+}
+
+@keyframes gate-ping {
+  0% { opacity: 0.75; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(1.75); }
+}
+
+.gate-art__addr {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.gate-art__addr i {
+  display: block;
+  width: 70%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Safari 27+: the way in is a press on the address bar itself, so the bar is what is lit
+   and a fingertip rests on it. */
+.gate-art__addr--hot {
+  position: relative;
+  background: rgba(255, 210, 63, 0.15);
+  box-shadow:
+    inset 0 0 0 1.5px var(--gate-gold),
+    0 0 0 3px rgba(255, 210, 63, 0.2);
+}
+
+/* the address text runs under the fingertip, so the lit bar cannot be read as a switch */
+.gate-art__addr--hot i {
+  width: 100%;
+  background: rgba(255, 210, 63, 0.4);
+}
+
+.gate-art__addr--hot::before,
+.gate-art__addr--hot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+}
+
+.gate-art__addr--hot::before {
+  background: var(--gate-gold);
+  box-shadow: 0 0 0 2.5px var(--gate-tile);
+}
+
+.gate-art__addr--hot::after {
+  border: 1.5px solid var(--gate-gold);
+  opacity: 0;
+  animation: gate-ping 2.2s var(--gate-ease) infinite;
+}
+
+.gate-art__pop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  align-self: flex-end;
+  max-width: 100%;
+  min-height: 26px;
+  padding: 0 8px 0 9px;
+  border: 1.5px solid var(--gate-gold);
+  border-radius: 9px;
+  background: rgba(255, 210, 63, 0.13);
+  color: var(--gate-text);
+  white-space: nowrap;
+}
+
+.gate-art__pop .gate-g {
+  color: var(--gate-gold);
+}
+
+.gate-art--top {
+  justify-content: flex-start;
+}
+
+/* the Share row opens over the address bar, not over the right-hand button */
+.gate-art--hold .gate-art__pop {
+  align-self: center;
+}
+
+/* Safari 16–18: address bar over the bottom toolbar, Share lit in the middle of it */
+.gate-art--toolbar {
+  gap: 7px;
+}
+
+.gate-art__tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1px;
+}
+
+.gate-art__tool {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 24px;
+  color: rgba(255, 244, 222, 0.34);
+}
+
+.gate-art__tool .gate-g {
+  width: 13px;
+  height: 13px;
+}
+
+/* list / confirm rows */
+
+.gate-art--list,
+.gate-art--confirm {
+  justify-content: center;
+}
+
+.gate-art__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex: none;
+  height: 20px;
+  padding: 0 7px 0 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+  white-space: nowrap;
+}
+
+.gate-art__row i {
+  display: block;
+  width: 52%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.17);
+}
+
+.gate-art__row i.gate-art__short {
+  width: 36%;
+}
+
+.gate-art__row b {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.gate-art__row--hot {
+  height: 26px;
+  border: 1.5px solid var(--gate-gold);
+  background: rgba(255, 210, 63, 0.13);
+  color: var(--gate-text);
+}
+
+.gate-art__row--hot .gate-g {
+  color: var(--gate-gold);
+}
+
+.gate-art__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  height: 20px;
+}
+
+.gate-art__cancel {
+  display: block;
+  width: 22px;
+  height: 4px;
+  margin-left: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.17);
+}
+
+.gate-art__add {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 20px;
+  padding: 0 9px;
+  border-radius: 10px;
+  background: var(--gate-gold);
+  color: var(--gate-ink);
+  font-weight: 800;
+  box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.22);
+}
+
+.gate-art__app {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: 20px;
+  padding-left: 2px;
+  color: rgba(255, 244, 222, 0.78);
+}
+
+.gate-art__row--switch {
+  gap: 4px;
+  height: 24px;
+  padding: 0 4px 0 6px;
+  color: var(--gate-text);
+  font-size: 10px;
+}
+
+.gate-art__switch {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 22px;
+  height: 14px;
+  border-radius: 7px;
+  background: #34c759;
+}
+
+.gate-art__switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Safari before 26: no switch on the Add sheet, just the address under the name */
+.gate-art__row--url {
+  height: 18px;
+}
+
+.gate-art__row--url i {
+  width: 64%;
+}
+
+/* ---- closing line ---- */
+
+.gate__final {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 0;
+}
+
+.gate__final-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 0;
+  font-family: var(--gate-display);
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--gate-text);
+  text-align: left;
+}
+
+/* for the icon that was added with "Open as Web App" switched off and lands here again */
+.gate__final-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--gate-faint);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.gate__final-line > span {
+  text-wrap: balance;
+}
+
+.gate__final-note b {
+  font-weight: 700;
+  color: var(--gate-dim);
+}
+
+/* ---- buttons: sticker slabs that sink onto their ink shadow when pressed ---- */
+
+.gate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 18px;
+  border: 3px solid var(--gate-ink);
+  border-radius: 16px;
+  font-family: var(--gate-display);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+  transform: translateY(0);
+  transition: transform 90ms var(--gate-ease), box-shadow 90ms var(--gate-ease);
+}
+
+.gate-btn .gate-g {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.6;
+}
+
+.gate-btn--primary {
+  min-height: 58px;
+  margin-top: 4px;
+  background: var(--gate-gold);
+  color: var(--gate-ink);
+  font-size: 22px;
+  box-shadow: 0 5px 0 var(--gate-ink);
+}
+
+.gate-btn--primary:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--gate-ink);
+}
+
+.gate-btn--ghost {
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--gate-paper);
+  color: var(--gate-ink);
+  font-size: 16px;
+  box-shadow: 0 3px 0 var(--gate-ink);
+}
+
+.gate-btn--ghost:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--gate-ink);
+}
+
+.gate-btn:focus-visible,
+.gate__quiet:focus-visible,
+.gate-pill:focus-visible {
+  outline: 3px solid var(--gate-lime);
+  outline-offset: 3px;
+}
+
+/* ---- copy the address ---- */
+
+.gate-copy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px 8px 0;
+  border: 3px solid var(--gate-ink);
+  border-radius: 16px;
+  background: var(--gate-card);
+  box-shadow: 0 4px 0 var(--gate-ink);
+}
+
+.gate-copy__url {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  padding: 0 4px 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--gate-dim);
+  font-family: var(--gate-sans);
+  /* 16px minimum: anything smaller makes iOS zoom the page on focus */
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-user-select: text;
+  user-select: text;
+  outline: none;
+}
+
+.gate-copy__hint {
+  min-height: 18px;
+  text-wrap: balance;
+  margin: -6px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gate-gold);
+  text-align: center;
+}
+
+.gate-copy__hint:empty {
+  display: none;
+}
+
+/* ---- foot ---- */
+
+.gate__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0;
+  text-align: center;
+}
+
+.gate__quiet {
+  min-height: 44px;
+  margin: 0;
+  padding: 0 18px;
+  border: 0;
+  background: none;
+  color: var(--gate-dim);
+  font-family: var(--gate-display);
+  font-size: 18px;
+  line-height: 1;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(187, 175, 207, 0.45);
+  text-underline-offset: 6px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+}
+
+.gate__quiet:active {
+  color: var(--gate-text);
+}
+
+.gate__warn {
+  margin: -2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--gate-faint);
+  text-wrap: balance;
+}
+
+.gate__warn b {
+  font-weight: 700;
+  color: var(--gate-dim);
+}
+
+/* ---- load notice (index.html): the modules could not be fetched, or are taking long ---- */
+
+.gate--notice .gate__inner {
+  gap: 22px;
+  max-width: 340px;
+}
+
+/* the burst sits behind the message, which is centred */
+.gate--notice::before {
+  top: 50%;
+  margin-top: -400px;
+}
+
+.gate--notice .gate__headline {
+  margin-top: 0;
+}
+
+.gate--notice .gate__lead {
+  font-family: var(--gate-sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gate-dim);
+}
+
+/* ---- Android install pill (optional, js/install.js mountInstallPill) ---- */
+
+.gate-pill {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 55;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 18px;
+  border: 3px solid var(--gate-ink);
+  border-radius: 22px;
+  background: var(--gate-gold);
+  color: var(--gate-ink);
+  font-family: var(--gate-display);
+  font-size: 17px;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 0 var(--gate-ink);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+}
+
+.gate-pill[hidden] {
+  display: none;
+}
+
+/* ---- entrance: the sticker slaps on, the rest rises in order ---- */
+
+@keyframes gate-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gate-slap {
+  from { opacity: 0; transform: rotate(-14deg) scale(1.5); }
+  to { opacity: 1; transform: rotate(-6deg) scale(1); }
+}
+
+.gate__inner > * {
+  animation: gate-rise 420ms var(--gate-ease) both;
+}
+
+.gate__inner > :nth-child(2) { animation-delay: 50ms; }
+.gate__inner > :nth-child(3) { animation-delay: 100ms; }
+.gate__inner > :nth-child(4) { animation-delay: 150ms; }
+.gate__inner > :nth-child(n + 5) { animation-delay: 200ms; }
+
+.gate-icon--hero {
+  animation: gate-slap 380ms var(--gate-back) both 60ms;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gate-btn--ghost:hover {
+    background: #fff;
+  }
+
+  .gate__quiet:hover {
+    color: var(--gate-text);
+  }
+}
+
+/* ---- short screens (iPhone SE, Safari tab with both bars showing) ---- */
+
+@media (max-height: 740px) {
+  .gate__inner {
+    gap: 10px;
+  }
+
+  /* The hero becomes a side-by-side lockup (icon | wordmark over tape): step ① has to be on
+     the first screen even with both Safari bars showing. */
+  .gate__head {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    align-items: center;
+    column-gap: 20px;
+  }
+
+  .gate__plate {
+    grid-row: 1 / span 2;
+    margin: 0;
+  }
+
+  .gate__word {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    font-size: 44px;
+  }
+
+  .gate__tape {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    justify-self: start;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+
+  .gate__headline,
+  .gate__lead {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  .gate-icon--hero {
+    --s: 70px;
+  }
+
+  .gate__lead {
+    margin-top: 8px;
+    font-size: 19px;
+  }
+
+  .gate__headline {
+    margin-top: 10px;
+    font-size: 26px;
+  }
+
+  .gate__steps {
+    gap: 9px;
+    margin-top: 2px;
+  }
+
+  .gate-step {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .gate-art {
+    height: 78px;
+  }
+
+  .gate-icon--mini {
+    --s: 38px;
+  }
+
+  .gate__final {
+    gap: 6px;
+    margin-top: 2px;
+  }
+}
+
+/* ---- narrow phones: give the words the room, shrink the drawing ---- */
+
+@media (max-width: 359px) {
+  .gate {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+
+  .gate-step {
+    padding-left: 11px;
+    padding-right: 8px;
+  }
+
+  .gate-step__text h2 {
+    gap: 6px;
+    font-size: 17px;
+  }
+
+  .gate-art {
+    width: 116px;
+  }
+
+  .gate-art__row--switch {
+    gap: 3px;
+    padding: 0 3px 0 5px;
+    font-size: 9.5px;
+  }
+
+  .gate-art__switch {
+    width: 20px;
+    height: 12px;
+  }
+
+  .gate-art__switch::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .gate__headline {
+    font-size: 22px;
+  }
+
+  .gate__headline br {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate__inner > *,
+  .gate-icon--hero {
+    animation: gate-fade 150ms linear both;
+    animation-delay: 0ms;
+  }
+
+  .gate-art__btn--hot::after,
+  .gate-art__addr--hot::after {
+    animation: none;
+  }
+
+  .gate-btn {
+    transition: none;
+  }
+}
+
+/* The app's own motion setting (설정 → 움직임 줄이기) applies to the guide opened from the menu. */
+[data-motion='reduce'] .gate__inner > *,
+[data-motion='reduce'] .gate-icon--hero {
+  animation: gate-fade 150ms linear both;
+  animation-delay: 0ms;
+}
+
+[data-motion='reduce'] .gate-art__btn--hot::after,
+[data-motion='reduce'] .gate-art__addr--hot::after {
+  animation: none;
+}
+
+@keyframes gate-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

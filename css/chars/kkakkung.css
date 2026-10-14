@@ -1,0 +1,544 @@
+/* css/chars/kkakkung.css — 까꿍 Kkakkung, the prankster ghost with a 청사초롱 lantern.
+   Builds on css/fighters.css (docs/SPEC.md §7, §8.5; docs/research/characters.md §4.7).
+
+   Parts (joint sandwiches in js/chars/kkakkung.js) and their transform-function lists:
+     wisp   spirit-flame cowlick, root (60,21) ........ rotate scale
+     hem    scalloped fringe, hem line (60,88) ........ skewX scale   (points ON the hem line never move,
+                                                         so the fringe wiggles without tearing off the body)
+     armL   shoulder (37,63) .......................... rotate        (+ swings a hanging limb screen-left)
+     armR   shoulder (83,63), holds the stick ......... rotate
+     lantern  pendulum at the stick tip (109,50) ...... rotate        (≈ −(rig + armR) keeps it hanging)
+     glows  lantern halo, centre (109,67.5) ........... scale
+   Effect layer (sibling svg, does not move with the body): fx-lantern (a copy of stick+lantern that is
+   left hanging in mid-air while the ghost is invisible) › fl-lan › fl-glows, fx-dots "…",
+   fx-burst (radial "surprise" lines), fx-sticker "까꿍!", fx-dizzy.
+   Faces: face-a (idle "o"), face-g (giggle ^ω^, extra), face-b (victory, laughing), face-c (lose, ㅠㅠ).
+   Rig (HTML, composited): translate rotate rotateY scale (+ opacity).
+
+   WIN 2.4 s — "사라졌다… 까꿍!"
+     0.00–0.30  giggle (face-g ^ω^, wobble ±7°, lantern swings) — rig/armR/lantern back to rest AT 0.30
+     0.30       the lantern is handed over to the fx copy (held → hidden, fx-lantern → shown; same pixels)
+     0.30–0.64  squash, then evaporate upward (opacity → 0) waving bye; the lantern stays put in mid-air
+     0.64–1.08  invisible: the lantern bobs and drifts, its glow flickers, "…" appears dot by dot
+     1.10       "까…" POP: back, small and sneaky (face-g), grabs the lantern again; crouches to wind up
+     1.30 HIT   "…꿍!" bursts big (≈1.25×, close to the camera, fills the stage): face-b, arms flung wide,
+                lantern raised, flash + burst lines + "까꿍!" sticker + jingle
+     1.45–1.85  drops back with squash-and-stretch
+     1.90–2.40  twirl (rotateY 360°) and settle into the final pose; then a 1.2 s float/wave loop
+   Percent ↔ seconds: 1.667=.04 4.583=.11 7.5=.18 10=.24 12.5=.30 15=.36 20.833=.50 26.667=.64
+     31.25=.75 35.417=.85 39.583=.95 45=1.08 45.833=1.10 50=1.20 54.167=1.30 60.417=1.45 64.583=1.55
+     68.75=1.65 72.917=1.75 77.083=1.85 79.167=1.90 85.417=2.05 91.667=2.20 95.833=2.30 */
+
+/* ===================== palette P1 (pale lavender) + alt (mint ghost) ===================== */
+.ch-kkakkung, .stage[data-char="kkakkung"] .fx {
+  --body: #F1ECFF; --shade: #CDBFF7; --cheek: #FFB3C8; --mouth: #5A3A7A; --tongue: #FF8FB0;
+  --flame: #9EE8FF; --flame-in: #EAFBFF; --tear: #8FD8FF;
+  --lan-top: #2F5BD3; --lan-bot: #E5394F; --lan-top-lit: #5F8BFF; --lan-bot-lit: #FF7286; --frame: #3A2A1E; --glow: #FFE07A; --stick: #A0703F; --knot: #FFC94A;
+}
+.alt .ch-kkakkung, .ch-kkakkung.alt, .stage.alt[data-char="kkakkung"] .fx, .alt .stage[data-char="kkakkung"] .fx {
+  --body: #DDF7EA; --shade: #A8E3C8; --cheek: #FF9FB8; --flame: #FFB3C8; --flame-in: #FFEDF3;
+}
+
+.ch-kkakkung .body { fill: var(--body); }
+.ch-kkakkung .shade { fill: var(--shade); }
+.ch-kkakkung .edge { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ch-kkakkung .shine { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; opacity: .85; }
+.ch-kkakkung .cheek { fill: var(--cheek); opacity: .8; }
+.ch-kkakkung .hl { fill: #fff; }
+.ch-kkakkung .mouth { fill: var(--mouth); }
+.ch-kkakkung .tongue { fill: var(--tongue); }
+.ch-kkakkung .flame { fill: var(--flame); }
+.ch-kkakkung .flame-in { fill: var(--flame-in); }
+.ch-kkakkung .ln.thin { stroke-width: 2; }
+.ch-kkakkung .ln.wide { stroke-width: 2.8; }
+.ch-kkakkung .tear { fill: var(--tear); stroke: var(--ink); stroke-width: 1.3; stroke-linejoin: round; }
+/* face B/C/G also hidden outside a .stage (portraitHTML / figureHTML); state animations out-rank this */
+.ch-kkakkung .face-b, .ch-kkakkung .face-c, .ch-kkakkung .face-g { opacity: 0; }
+
+/* the lantern: same classes in the hand (svg) and in the abandoned copy (fx) */
+.ch-kkakkung .glow, .stage[data-char="kkakkung"] .fx .glow { fill: var(--glow); }
+/* Most of the light right around the lantern, then a quick falloff: with no blend modes the halo
+   cannot add light, and even rings over a dark page read as a dull khaki disc. A warmer yellow
+   and a bright inner ring read as lamplight instead. */
+.ch-kkakkung .g1, .stage[data-char="kkakkung"] .fx .g1 { opacity: .1; }
+.ch-kkakkung .g2, .stage[data-char="kkakkung"] .fx .g2 { opacity: .22; }
+.ch-kkakkung .g3, .stage[data-char="kkakkung"] .fx .g3 { opacity: .55; }
+.ch-kkakkung .stick-ink, .stage[data-char="kkakkung"] .fx .stick-ink { fill: none; stroke: var(--ink); stroke-width: 4.8; stroke-linecap: round; }
+.ch-kkakkung .stick, .stage[data-char="kkakkung"] .fx .stick { fill: none; stroke: var(--stick); stroke-width: 2.2; stroke-linecap: round; }
+.ch-kkakkung .cord, .stage[data-char="kkakkung"] .fx .cord { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; }
+.ch-kkakkung .lan-top, .stage[data-char="kkakkung"] .fx .lan-top { fill: var(--lan-top); }
+.ch-kkakkung .lan-bot, .stage[data-char="kkakkung"] .fx .lan-bot { fill: var(--lan-bot); }
+.ch-kkakkung .lan-lit-top, .stage[data-char="kkakkung"] .fx .lan-lit-top { fill: var(--lan-top-lit); }
+.ch-kkakkung .lan-lit-bot, .stage[data-char="kkakkung"] .fx .lan-lit-bot { fill: var(--lan-bot-lit); }
+.ch-kkakkung .lan-rib, .stage[data-char="kkakkung"] .fx .lan-rib { fill: none; stroke: var(--ink); stroke-width: 1.2; opacity: .3; }
+.ch-kkakkung .lan-gloss, .stage[data-char="kkakkung"] .fx .lan-gloss { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; opacity: .55; }
+.ch-kkakkung .lan-dim, .stage[data-char="kkakkung"] .fx .lan-dim { fill: var(--ink); opacity: 0; }
+.ch-kkakkung .lan-edge, .stage[data-char="kkakkung"] .fx .lan-edge { fill: none; }
+.ch-kkakkung .lan-seam, .stage[data-char="kkakkung"] .fx .lan-seam { fill: none; stroke: var(--frame); stroke-width: 1.3; opacity: .7; }
+.ch-kkakkung .frame, .stage[data-char="kkakkung"] .fx .frame { fill: var(--frame); }
+.ch-kkakkung .tassel, .stage[data-char="kkakkung"] .fx .tassel { fill: var(--lan-bot); }
+.ch-kkakkung .knot, .stage[data-char="kkakkung"] .fx .knot { fill: var(--knot); }
+
+/* ---------- effect layer ---------- */
+.stage[data-char="kkakkung"] .fx .o2 { stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.stage[data-char="kkakkung"] .fx .dot { fill: #fff; stroke: var(--ink); stroke-width: 1.4; }
+.stage[data-char="kkakkung"] .fx .burst-ink { fill: none; stroke: var(--ink); stroke-width: 5.6; stroke-linecap: round; }
+.stage[data-char="kkakkung"] .fx .burst { fill: none; stroke: var(--flame); stroke-width: 2.8; stroke-linecap: round; }
+.stage[data-char="kkakkung"] .fx .stk-bg { fill: #fff; stroke: var(--ink); stroke-width: 2.4; }
+.stage[data-char="kkakkung"] .fx .stk-txt { fill: #7B4FE6; font: 900 13px system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif; letter-spacing: -.02em; }
+.stage[data-char="kkakkung"] .fx .fx-dizzy { fill: #FFC83D; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
+.stage[data-char="kkakkung"] .fx .fx-dizzy .star { transform-box: view-box; transform-origin: 0 0; }
+
+/* the ghost floats: a smaller, softer shadow well below the hem; the pop flash is ghost-fire tinted */
+.stage[data-char="kkakkung"] .shadow { left: 34%; width: 32%; top: 91.5%; height: 4.5%; }
+.stage[data-char="kkakkung"] .flash {
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(190, 240, 255, .6) 45%, rgba(205, 191, 247, 0));
+}
+
+/* ===================== IDLE: float ±3 % (composited); shadow breathes with it ===================== */
+.stage[data-char="kkakkung"][data-state="idle"] .rig { animation: kkakkung-float 2.4s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="idle"] .shadow { animation: kkakkung-float-shadow 2.4s ease-in-out infinite; }
+@keyframes kkakkung-float {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); }
+  50%      { transform: translate(0%, -3%) rotate(0deg) scale(.99, 1.012); }
+}
+@keyframes kkakkung-float-shadow {
+  0%, 100% { transform: scale(1, 1); opacity: 1; }
+  50%      { transform: scale(.86, .86); opacity: .7; }
+}
+
+/* fidget (0.8 s, JS adds .fidget while idle): the lantern swings on its cord, flame flicks, hem flutters
+   (+ the shared blink on .eye) */
+.stage[data-char="kkakkung"].fidget .armR    { animation: kkakkung-fidget-arm .8s ease-in-out 1; }
+.stage[data-char="kkakkung"].fidget .lantern { animation: kkakkung-fidget-lantern .8s ease-in-out 1; }
+.stage[data-char="kkakkung"].fidget .wisp    { animation: kkakkung-fidget-wisp .8s ease-in-out 1; }
+.stage[data-char="kkakkung"].fidget .hem     { animation: kkakkung-fidget-hem .8s ease-in-out 1; }
+@keyframes kkakkung-fidget-arm { 0%, 100% { transform: rotate(0deg); } 15% { transform: rotate(-7deg); } 40% { transform: rotate(3deg); } 65% { transform: rotate(-1deg); } }
+@keyframes kkakkung-fidget-lantern {
+  0%, 100% { transform: rotate(0deg); } 15% { transform: rotate(-4deg); } 32% { transform: rotate(13deg); }
+  52% { transform: rotate(-8deg); } 72% { transform: rotate(4deg); } 88% { transform: rotate(-1.5deg); } }
+@keyframes kkakkung-fidget-wisp {
+  0%, 100% { transform: rotate(0deg) scale(1, 1); } 25% { transform: rotate(10deg) scale(.95, 1.12); }
+  55% { transform: rotate(-8deg) scale(1.04, .96); } 80% { transform: rotate(3deg) scale(1, 1.03); } }
+@keyframes kkakkung-fidget-hem {
+  0%, 100% { transform: skewX(0deg) scale(1, 1); } 30% { transform: skewX(6deg) scale(1, 1.04); }
+  60% { transform: skewX(-4deg) scale(1, .98); } 85% { transform: skewX(1.5deg) scale(1, 1); } }
+
+/* ===================== MY TURN (0.6 s): blink out… and peek back "까꿍!" toward the opponent ===================== */
+.stage[data-char="kkakkung"][data-state="turn"] .rig {
+  transform-origin: 50% 75%;
+  animation: kkakkung-turn .6s ease-in-out both, kkakkung-float 2.4s .6s ease-in-out infinite;
+}
+.stage[data-char="kkakkung"][data-state="turn"] .shadow  { animation: kkakkung-turn-shadow .6s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="turn"] .armL    { animation: kkakkung-turn-armL .6s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="turn"] .armR    { animation: kkakkung-turn-armR .6s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="turn"] .lantern { animation: kkakkung-turn-lantern .6s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="turn"] .hem     { animation: kkakkung-turn-hem .6s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="turn"] .wisp    { animation: kkakkung-turn-wisp .6s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="turn"] .face-a  { animation: kkakkung-turn-face-a .6s step-end both; }
+.stage[data-char="kkakkung"][data-state="turn"] .face-b  { animation: kkakkung-turn-face-b .6s step-end both; }
+@keyframes kkakkung-turn {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); opacity: 1; animation-timing-function: ease-out; }
+  16%  { transform: translate(0%, 3%) rotate(0deg) scale(1.08, .9); opacity: 1; animation-timing-function: ease-in; }
+  30%  { transform: translate(0%, 2%) rotate(0deg) scale(.82, .82); opacity: .12; animation-timing-function: cubic-bezier(.2, .9, .3, 1.3); }
+  46%  { transform: translate(calc(var(--dir, 1) * 4%), -7%) rotate(calc(var(--dir, 1) * 7deg)) scale(1.12, 1.12); opacity: 1; animation-timing-function: ease-in-out; }
+  64%  { transform: translate(calc(var(--dir, 1) * 1%), -1%) rotate(calc(var(--dir, 1) * -2deg)) scale(.97, 1.03); opacity: 1; }
+  82%  { transform: translate(0%, 0%) rotate(calc(var(--dir, 1) * 1deg)) scale(1.02, .98); opacity: 1; }
+  100% { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); opacity: 1; }
+}
+@keyframes kkakkung-turn-shadow {
+  0%, 100% { transform: scale(1, 1); opacity: 1; }
+  16% { transform: scale(1.1, 1); opacity: 1; }
+  30% { transform: scale(.7, .8); opacity: .25; }
+  46% { transform: scale(1.12, 1); opacity: .85; }
+}
+@keyframes kkakkung-turn-armL { 0%, 100% { transform: rotate(0deg); } 16% { transform: rotate(-12deg); } 46% { transform: rotate(72deg); } 64% { transform: rotate(28deg); } 82% { transform: rotate(-4deg); } }
+@keyframes kkakkung-turn-armR { 0%, 100% { transform: rotate(0deg); } 16% { transform: rotate(6deg); } 46% { transform: rotate(-22deg); } 64% { transform: rotate(-2deg); } 82% { transform: rotate(2deg); } }
+@keyframes kkakkung-turn-lantern {
+  0%, 100% { transform: rotate(0deg); } 16% { transform: rotate(-6deg); } 46% { transform: rotate(12deg); }
+  64% { transform: rotate(18deg); } 82% { transform: rotate(-6deg); } 92% { transform: rotate(2deg); } }
+@keyframes kkakkung-turn-hem {
+  0%, 100% { transform: skewX(0deg) scale(1, 1); } 16% { transform: skewX(0deg) scale(1, .84); }
+  46% { transform: skewX(calc(var(--dir, 1) * -12deg)) scale(1, 1.16); } 64% { transform: skewX(calc(var(--dir, 1) * 7deg)) scale(1, 1); }
+  82% { transform: skewX(calc(var(--dir, 1) * -3deg)) scale(1, 1); } }
+@keyframes kkakkung-turn-wisp {
+  0%, 100% { transform: rotate(0deg) scale(1, 1); } 16% { transform: rotate(0deg) scale(1.12, .84); }
+  46% { transform: rotate(-12deg) scale(1, 1.35); } 64% { transform: rotate(9deg) scale(1, 1.05); } 82% { transform: rotate(-3deg) scale(1, 1); } }
+@keyframes kkakkung-turn-face-a { 0% { opacity: 1; } 40% { opacity: 0; } 78%, 100% { opacity: 1; } }
+@keyframes kkakkung-turn-face-b { 0% { opacity: 0; } 40% { opacity: 1; } 78%, 100% { opacity: 0; } }
+
+/* ===================== WIN (2.4 s) + 1.2 s loop from 2.4 s ===================== */
+.stage[data-char="kkakkung"][data-state="win"] .rig {
+  transform-origin: 50% 60%;    /* (60,72): the middle of the body, so the POP grows toward the camera */
+  animation: kkakkung-win 2.4s linear both, kkakkung-loop 1.2s 2.4s ease-in-out infinite;
+}
+.stage[data-char="kkakkung"][data-state="win"] .shadow  { animation: kkakkung-shadow 2.4s ease-in-out both, kkakkung-loop-shadow 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="win"] .flash   { animation: kkakkung-flash 2.4s ease-out both; }
+.stage[data-char="kkakkung"][data-state="win"] .armL    { animation: kkakkung-armL 2.4s ease-in-out both, kkakkung-loop-armL 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="win"] .armR    { animation: kkakkung-armR 2.4s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="win"] .lantern { animation: kkakkung-lantern 2.4s ease-in-out both, kkakkung-loop-lantern 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="win"] .glows   { animation: kkakkung-glows 2.4s ease-out both, kkakkung-loop-glows 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="win"] .hem     { animation: kkakkung-hem 2.4s ease-in-out both, kkakkung-loop-hem 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="win"] .wisp    { animation: kkakkung-wisp 2.4s ease-in-out both, kkakkung-loop-wisp 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="win"] .held    { animation: kkakkung-held 2.4s step-end both; }
+.stage[data-char="kkakkung"][data-state="win"] .face-a  { animation: none; opacity: 0; }
+.stage[data-char="kkakkung"][data-state="win"] .face-g  { animation: kkakkung-until-pop 2.4s step-end both; }
+.stage[data-char="kkakkung"][data-state="win"] .face-b  { animation: kkakkung-from-pop 2.4s step-end both; }
+.stage[data-char="kkakkung"][data-state="win"] .fx-lantern { animation: kkakkung-fl-move 2.4s ease-in-out both, kkakkung-fl-vis 2.4s step-end both; }
+.stage[data-char="kkakkung"][data-state="win"] .fl-lan     { animation: kkakkung-fl-lan 2.4s ease-in-out both; }
+.stage[data-char="kkakkung"][data-state="win"] .fl-glows   { animation: kkakkung-fl-glows 2.4s linear both; }
+.stage[data-char="kkakkung"][data-state="win"] .fx-dots    { animation: kkakkung-dots 2.4s step-end both; }
+.stage[data-char="kkakkung"][data-state="win"] .dot:nth-child(1) { animation: kkakkung-dot1 2.4s ease-out both; }
+.stage[data-char="kkakkung"][data-state="win"] .dot:nth-child(2) { animation: kkakkung-dot2 2.4s ease-out both; }
+.stage[data-char="kkakkung"][data-state="win"] .dot:nth-child(3) { animation: kkakkung-dot3 2.4s ease-out both; }
+.stage[data-char="kkakkung"][data-state="win"] .fx-burst   { animation: kkakkung-burst 2.4s ease-out both; }
+.stage[data-char="kkakkung"][data-state="win"] .fx-sticker { animation: kkakkung-sticker 2.4s ease-out both; }
+
+/* rig: same function list in EVERY keyframe (the twirl needs rotateY to interpolate as 0→360°) */
+@keyframes kkakkung-win {
+  0%      { transform: translate(0%, 0%) rotate(0deg) rotateY(0deg) scale(1, 1); opacity: 1; animation-timing-function: ease-out; }
+  1.667%  { transform: translate(0%, 1.5%) rotate(0deg) rotateY(0deg) scale(1.06, .94); opacity: 1; animation-timing-function: ease-in-out; }
+  4.583%  { transform: translate(1%, -1.5%) rotate(7deg) rotateY(0deg) scale(.97, 1.04); opacity: 1; animation-timing-function: ease-in-out; }
+  7.5%    { transform: translate(-1%, -1%) rotate(-6deg) rotateY(0deg) scale(1.03, .98); opacity: 1; animation-timing-function: ease-in-out; }
+  10%     { transform: translate(.5%, -.5%) rotate(3deg) rotateY(0deg) scale(1, 1); opacity: 1; animation-timing-function: ease-in-out; }
+  12.5%   { transform: translate(0%, 0%) rotate(0deg) rotateY(0deg) scale(1, 1); opacity: 1; animation-timing-function: ease-out; }
+  15%     { transform: translate(0%, 1.5%) rotate(0deg) rotateY(0deg) scale(1.08, .92); opacity: 1; animation-timing-function: ease-in; }
+  20.833% { transform: translate(0%, -6%) rotate(0deg) rotateY(0deg) scale(.86, 1.14); opacity: .5; animation-timing-function: ease-out; }
+  26.667% { transform: translate(0%, -11%) rotate(0deg) rotateY(0deg) scale(.6, 1.3); opacity: 0; animation-timing-function: linear; }
+  45%     { transform: translate(0%, 3%) rotate(0deg) rotateY(0deg) scale(.8, .8); opacity: 0; animation-timing-function: linear; }
+  45.833% { transform: translate(0%, 3%) rotate(0deg) rotateY(0deg) scale(.8, .8); opacity: 1; animation-timing-function: ease-out; }
+  48.333% { transform: translate(0%, 1%) rotate(-5deg) rotateY(0deg) scale(.92, .95); opacity: 1; animation-timing-function: ease-in-out; }
+  50.833% { transform: translate(0%, 4%) rotate(0deg) rotateY(0deg) scale(1.1, .86); opacity: 1; animation-timing-function: cubic-bezier(.2, .9, .3, 1); }
+  54.167% { transform: translate(0%, 2%) rotate(0deg) rotateY(0deg) scale(1.16, 1.3); opacity: 1; animation-timing-function: ease-out; }
+  56.25%  { transform: translate(0%, 4.5%) rotate(0deg) rotateY(0deg) scale(1.29, 1.17); opacity: 1; animation-timing-function: ease-in-out; }
+  58.333% { transform: translate(0%, 4%) rotate(0deg) rotateY(0deg) scale(1.22, 1.24); opacity: 1; animation-timing-function: ease-in-out; }
+  60.417% { transform: translate(0%, 4%) rotate(0deg) rotateY(0deg) scale(1.24, 1.22); opacity: 1; animation-timing-function: ease-in; }
+  64.583% { transform: translate(0%, 2%) rotate(0deg) rotateY(0deg) scale(1.05, .9); opacity: 1; animation-timing-function: ease-out; }
+  68.75%  { transform: translate(0%, -2%) rotate(0deg) rotateY(0deg) scale(.97, 1.05); opacity: 1; animation-timing-function: ease-in-out; }
+  72.917% { transform: translate(0%, .5%) rotate(0deg) rotateY(0deg) scale(1.01, .99); opacity: 1; animation-timing-function: ease-in-out; }
+  77.083% { transform: translate(0%, 0%) rotate(0deg) rotateY(0deg) scale(1, 1); opacity: 1; animation-timing-function: ease-in-out; }
+  79.167% { transform: translate(0%, 1.5%) rotate(0deg) rotateY(0deg) scale(1.05, .95); opacity: 1; animation-timing-function: ease-in; }
+  85.417% { transform: translate(0%, -5%) rotate(0deg) rotateY(180deg) scale(.95, 1.05); opacity: 1; animation-timing-function: linear; }
+  91.667% { transform: translate(0%, -6%) rotate(0deg) rotateY(330deg) scale(1, 1); opacity: 1; animation-timing-function: ease-out; }
+  95.833% { transform: translate(0%, -.5%) rotate(-2deg) rotateY(360deg) scale(1.04, .96); opacity: 1; animation-timing-function: ease-in-out; }
+  100%    { transform: translate(0%, 0%) rotate(-2deg) rotateY(360deg) scale(1, 1); opacity: 1; }
+}
+@keyframes kkakkung-loop {
+  0%, 100% { transform: translate(0%, 0%) rotate(-2deg) rotateY(0deg) scale(1, 1); }
+  50%      { transform: translate(0%, -3.5%) rotate(2deg) rotateY(0deg) scale(.99, 1.012); }
+}
+@keyframes kkakkung-shadow {
+  0%, 100%  { transform: scale(1, 1); opacity: 1; }
+  1.667%    { transform: scale(1.08, 1); opacity: 1; }
+  12.5%     { transform: scale(1, 1); opacity: 1; }
+  15%       { transform: scale(1.08, 1); opacity: 1; }
+  26.667%, 45.4% { transform: scale(.4, .6); opacity: 0; }
+  45.833%   { transform: scale(.85, 1); opacity: .8; }
+  50.833%   { transform: scale(1.1, 1); opacity: 1; }
+  54.167%   { transform: scale(1.2, 1.05); opacity: .8; }
+  56.25%, 60.417% { transform: scale(1.32, 1.1); opacity: .9; }
+  64.583%   { transform: scale(1.1, 1); opacity: 1; }
+  77.083%, 79.167% { transform: scale(1, 1); opacity: 1; }
+  91.667%   { transform: scale(.8, .9); opacity: .75; }
+  95.833%   { transform: scale(1.06, 1); opacity: 1; }
+}
+@keyframes kkakkung-loop-shadow {
+  0%, 100% { transform: scale(1, 1); opacity: 1; }
+  50%      { transform: scale(.85, .85); opacity: .7; }
+}
+@keyframes kkakkung-flash {
+  0%, 53.6% { opacity: 0; transform: scale(.4); }
+  54.4%     { opacity: .9; transform: scale(.9); }
+  61%, 100% { opacity: 0; transform: scale(1.4); }
+}
+/* limbs. armR + lantern are exactly at rest at 12.5 % (0.30 s), the hand-over to the fx copy */
+@keyframes kkakkung-armL {
+  0%      { transform: rotate(0deg); }
+  1.667%  { transform: rotate(-12deg); }
+  4.583%  { transform: rotate(26deg); }
+  7.5%    { transform: rotate(4deg); }
+  10%     { transform: rotate(20deg); }
+  12.5%   { transform: rotate(4deg); }
+  15%     { transform: rotate(-6deg); }
+  19.167% { transform: rotate(70deg); }
+  22.917% { transform: rotate(44deg); }
+  26.667% { transform: rotate(74deg); }
+  45%     { transform: rotate(-6deg); }
+  48.333% { transform: rotate(14deg); }
+  50.833% { transform: rotate(-16deg); }
+  54.167% { transform: rotate(64deg); }
+  56.25%  { transform: rotate(50deg); }
+  60.417% { transform: rotate(56deg); }
+  66.667% { transform: rotate(16deg); }
+  72.917% { transform: rotate(28deg); }
+  79.167% { transform: rotate(12deg); }
+  85.417% { transform: rotate(66deg); }
+  91.667% { transform: rotate(62deg); }
+  95.833% { transform: rotate(42deg); }
+  100%    { transform: rotate(50deg); }
+}
+@keyframes kkakkung-loop-armL {
+  0%, 100% { transform: rotate(50deg); }
+  50% { transform: rotate(72deg); }
+}
+@keyframes kkakkung-armR {
+  0%      { transform: rotate(0deg); }
+  1.667%  { transform: rotate(4deg); }
+  4.583%  { transform: rotate(-10deg); }
+  7.5%    { transform: rotate(6deg); }
+  10%     { transform: rotate(-4deg); }
+  12.5%, 15% { transform: rotate(0deg); }
+  20.833% { transform: rotate(15deg); }
+  26.667% { transform: rotate(20deg); }
+  45%     { transform: rotate(-10deg); }
+  48.333% { transform: rotate(-4deg); }
+  50.833% { transform: rotate(8deg); }
+  54.167% { transform: rotate(-30deg); }
+  56.25%  { transform: rotate(-24deg); }
+  60.417% { transform: rotate(-26deg); }
+  66.667% { transform: rotate(-4deg); }
+  72.917% { transform: rotate(-10deg); }
+  79.167% { transform: rotate(-6deg); }
+  85.417%, 91.667% { transform: rotate(-24deg); }
+  95.833% { transform: rotate(-14deg); }
+  100%    { transform: rotate(-16deg); }
+}
+/* the lantern hangs: rotate ≈ −(rig rotate + armR) + a lagging swing */
+@keyframes kkakkung-lantern {
+  0%      { transform: rotate(0deg); }
+  1.667%  { transform: rotate(-3deg); }
+  4.583%  { transform: rotate(12deg); }
+  7.5%    { transform: rotate(-9deg); }
+  10%     { transform: rotate(6deg); }
+  12.5%, 15% { transform: rotate(0deg); }
+  20.833% { transform: rotate(-15deg); }
+  26.667% { transform: rotate(-20deg); }
+  45%     { transform: rotate(12deg); }
+  48.333% { transform: rotate(2deg); }
+  50.833% { transform: rotate(-14deg); }
+  54.167% { transform: rotate(20deg); }
+  56.25%  { transform: rotate(40deg); }
+  60.417% { transform: rotate(22deg); }
+  66.667% { transform: rotate(-2deg); }
+  72.917% { transform: rotate(14deg); }
+  79.167% { transform: rotate(4deg); }
+  85.417% { transform: rotate(32deg); }
+  91.667% { transform: rotate(16deg); }
+  95.833% { transform: rotate(22deg); }
+  100%    { transform: rotate(16deg); }
+}
+@keyframes kkakkung-loop-lantern {
+  0%, 100% { transform: rotate(16deg); } 30% { transform: rotate(23deg); } 75% { transform: rotate(10deg); }
+}
+@keyframes kkakkung-glows {
+  0%, 45.833% { transform: scale(1); opacity: 1; }
+  50.833%     { transform: scale(.9); opacity: .9; }
+  54.167%     { transform: scale(1.5); opacity: 1; }
+  66.667%     { transform: scale(1.05); opacity: .85; }
+  91.667%     { transform: scale(1.3); opacity: 1; }
+  100%        { transform: scale(1.1); opacity: 1; }
+}
+@keyframes kkakkung-loop-glows { 0%, 100% { transform: scale(1.1); opacity: 1; } 50% { transform: scale(1.25); opacity: .8; } }
+@keyframes kkakkung-hem {
+  0%      { transform: skewX(0deg) scale(1, 1); }
+  1.667%  { transform: skewX(0deg) scale(1, .88); }
+  4.583%  { transform: skewX(-10deg) scale(1, 1.05); }
+  7.5%    { transform: skewX(9deg) scale(1, 1); }
+  10%     { transform: skewX(-5deg) scale(1, 1); }
+  12.5%   { transform: skewX(0deg) scale(1, 1); }
+  15%     { transform: skewX(0deg) scale(1, .86); }
+  20.833% { transform: skewX(6deg) scale(1, 1.25); }
+  26.667% { transform: skewX(-4deg) scale(1, 1.4); }
+  45.833% { transform: skewX(0deg) scale(1, 1.1); }
+  48.333% { transform: skewX(-6deg) scale(1, 1.05); }
+  50.833% { transform: skewX(0deg) scale(1, .84); }
+  54.167% { transform: skewX(-9deg) scale(1, 1.25); }
+  56.25%  { transform: skewX(6deg) scale(1, 1.02); }
+  60.417% { transform: skewX(-3deg) scale(1, 1); }
+  64.583% { transform: skewX(3deg) scale(1, .84); }
+  68.75%  { transform: skewX(-3deg) scale(1, 1.1); }
+  72.917% { transform: skewX(2deg) scale(1, 1); }
+  77.083% { transform: skewX(0deg) scale(1, 1); }
+  79.167% { transform: skewX(0deg) scale(1, .9); }
+  85.417% { transform: skewX(14deg) scale(1, 1.1); }
+  91.667% { transform: skewX(-10deg) scale(1, 1.1); }
+  95.833% { transform: skewX(4deg) scale(1, .9); }
+  100%    { transform: skewX(0deg) scale(1, 1); }
+}
+@keyframes kkakkung-loop-hem {
+  0%, 100% { transform: skewX(0deg) scale(1, 1); }
+  25%      { transform: skewX(4deg) scale(1, 1.03); }
+  75%      { transform: skewX(-4deg) scale(1, 1.03); }
+}
+@keyframes kkakkung-wisp {
+  0%      { transform: rotate(0deg) scale(1, 1); }
+  1.667%  { transform: rotate(0deg) scale(1.15, .8); }
+  4.583%  { transform: rotate(-14deg) scale(1, 1.1); }
+  7.5%    { transform: rotate(12deg) scale(1, 1); }
+  10%     { transform: rotate(-6deg) scale(1, 1); }
+  12.5%   { transform: rotate(0deg) scale(1, 1); }
+  15%     { transform: rotate(0deg) scale(1.2, .8); }
+  20.833% { transform: rotate(0deg) scale(.8, 1.5); }
+  26.667% { transform: rotate(0deg) scale(.6, 1.8); }
+  45%     { transform: rotate(0deg) scale(1, 1); }
+  48.333% { transform: rotate(-8deg) scale(1, 1.1); }
+  50.833% { transform: rotate(0deg) scale(1.2, .8); }
+  54.167% { transform: rotate(-6deg) scale(1.12, 1.25); }
+  56.25%  { transform: rotate(8deg) scale(1.08, 1.12); }
+  60.417% { transform: rotate(-4deg) scale(1.04, 1.08); }
+  66.667% { transform: rotate(4deg) scale(1, 1); }
+  77.083% { transform: rotate(0deg) scale(1, 1); }
+  85.417% { transform: rotate(20deg) scale(1, 1.2); }
+  91.667% { transform: rotate(-12deg) scale(1, 1.1); }
+  95.833% { transform: rotate(6deg) scale(1, 1); }
+  100%    { transform: rotate(0deg) scale(1, 1); }
+}
+@keyframes kkakkung-loop-wisp {
+  0%, 100% { transform: rotate(0deg) scale(1, 1); }
+  25%      { transform: rotate(-6deg) scale(.97, 1.1); }
+  50%      { transform: rotate(0deg) scale(1.03, .95); }
+  75%      { transform: rotate(6deg) scale(.97, 1.1); }
+}
+/* visibility switches (step-end: the value jumps at the END of each segment) */
+@keyframes kkakkung-held { 0% { opacity: 1; } 12.5% { opacity: 0; } 45.833%, 100% { opacity: 1; } }
+@keyframes kkakkung-fl-vis { 0% { opacity: 0; } 12.5% { opacity: 1; } 45.833%, 100% { opacity: 0; } }
+@keyframes kkakkung-until-pop {
+  0% { opacity: 1; } 54%, 100% { opacity: 0; }
+}
+@keyframes kkakkung-from-pop {
+  0% { opacity: 0; } 54%, 100% { opacity: 1; }
+}
+/* the abandoned lantern: hangs still, bobs, drifts, then lines up with the hand that grabs it at the POP
+   (rig at 1.08 s = translate(0,3.6) scale(.8) about (60,72), armR −10° → translate(-4.6px,5.4px)) */
+@keyframes kkakkung-fl-move {
+  0%, 15%  { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+  20.833%  { transform: translate(0px, -1px) rotate(0deg) scale(1); }
+  26.667%  { transform: translate(0px, 1px) rotate(0deg) scale(1); }
+  31.25%   { transform: translate(-2px, -1.5px) rotate(-3deg) scale(1); }
+  35.417%  { transform: translate(-4px, .5px) rotate(2deg) scale(1); }
+  39.583%  { transform: translate(-5px, -2px) rotate(-3deg) scale(1); }
+  45%, 100% { transform: translate(-4.6px, 5.4px) rotate(-10deg) scale(.8); }
+}
+@keyframes kkakkung-fl-lan {
+  0%, 12.5% { transform: rotate(0deg); }
+  15.833%  { transform: rotate(-8deg); }
+  20%      { transform: rotate(6deg); }
+  24.167%  { transform: rotate(-3deg); }
+  28.333%  { transform: rotate(2deg); }
+  31.25%   { transform: rotate(6deg); }
+  35.417%  { transform: rotate(-7deg); }
+  39.583%  { transform: rotate(6deg); }
+  45%, 100% { transform: rotate(12deg); }
+}
+/* the light gutters while nobody holds it */
+@keyframes kkakkung-fl-glows {
+  0%, 22%  { transform: scale(1); opacity: 1; }
+  26%      { transform: scale(.9); opacity: .55; }
+  30%      { transform: scale(.95); opacity: .8; }
+  31%      { transform: scale(.8); opacity: .25; }
+  32.5%    { transform: scale(.95); opacity: .85; }
+  36%      { transform: scale(.9); opacity: .5; }
+  37%      { transform: scale(.75); opacity: .15; }
+  38.5%    { transform: scale(.9); opacity: .7; }
+  42%      { transform: scale(.8); opacity: .3; }
+  45%, 100% { transform: scale(1); opacity: 1; }
+}
+/* "…" — dot by dot while the stage is empty */
+@keyframes kkakkung-dots { 0% { opacity: 0; } 25% { opacity: 1; } 44.4%, 100% { opacity: 0; } }
+@keyframes kkakkung-dot1 { 0%, 25.833% { opacity: 0; transform: scale(0); } 27.5% { opacity: 1; transform: scale(1.4); } 29.167%, 100% { opacity: 1; transform: scale(1); } }
+@keyframes kkakkung-dot2 { 0%, 30.833% { opacity: 0; transform: scale(0); } 32.5% { opacity: 1; transform: scale(1.4); } 34.167%, 100% { opacity: 1; transform: scale(1); } }
+@keyframes kkakkung-dot3 { 0%, 35.833% { opacity: 0; transform: scale(0); } 37.5% { opacity: 1; transform: scale(1.4); } 39.167%, 100% { opacity: 1; transform: scale(1); } }
+@keyframes kkakkung-burst {
+  0%, 53.6% { opacity: 0; transform: scale(.8); }
+  54%       { opacity: 1; transform: scale(.88); }
+  58.333%   { opacity: 1; transform: scale(1.08); }
+  63.5%, 100% { opacity: 0; transform: scale(1.22); }
+}
+@keyframes kkakkung-sticker {
+  0%, 53.6% { opacity: 0; transform: scale(0) rotate(-30deg); }
+  54%       { opacity: 1; transform: scale(1.4) rotate(-3deg); animation-timing-function: ease-in-out; }
+  56.667%   { opacity: 1; transform: scale(.92) rotate(-12deg); }
+  58.75%, 80% { opacity: 1; transform: scale(1) rotate(-10deg); }
+  84%, 100% { opacity: 0; transform: scale(.5) rotate(-10deg); }
+}
+
+/* ===================== LOSE (1.0 s + loop): startle, slump into a pale puddle, lantern goes out ===================== */
+.stage[data-char="kkakkung"][data-state="lose"] .rig     { animation: kkakkung-lose 1s ease-out both, kkakkung-lose-loop 2.4s 1s ease-in-out infinite; }
+.stage[data-char="kkakkung"][data-state="lose"] .shadow  { animation: kkakkung-lose-shadow 1s ease-out both; }
+.stage[data-char="kkakkung"][data-state="lose"] .armL    { animation: kkakkung-lose-armL 1s ease-out both; }
+.stage[data-char="kkakkung"][data-state="lose"] .armR    { animation: kkakkung-lose-armR 1s ease-out both; }
+.stage[data-char="kkakkung"][data-state="lose"] .lantern { animation: kkakkung-lose-lantern 1s ease-out both; }
+.stage[data-char="kkakkung"][data-state="lose"] .glows   { animation: kkakkung-lose-glows 1s linear both; }
+.stage[data-char="kkakkung"][data-state="lose"] .lantern .lan-dim { animation: kkakkung-lose-dim 1s ease-out both; }
+.stage[data-char="kkakkung"][data-state="lose"] .hem     { animation: kkakkung-lose-hem 1s ease-out both; }
+.stage[data-char="kkakkung"][data-state="lose"] .wisp    { animation: kkakkung-lose-wisp 1s ease-out both; }
+.stage[data-char="kkakkung"][data-state="lose"] .face-a  { animation: kkakkung-lose-face-a 1s step-end both; }
+.stage[data-char="kkakkung"][data-state="lose"] .face-c  { animation: kkakkung-lose-face-c 1s step-end both; }
+.stage[data-char="kkakkung"][data-state="lose"] .fx-dizzy { animation: kkakkung-lose-dizzy .3s .6s ease-out both; }
+@keyframes kkakkung-lose {
+  0%   { transform: translate(0%, 0%) rotate(0deg) scale(1, 1); opacity: 1; animation-timing-function: ease-out; }
+  12%  { transform: translate(0%, -4%) rotate(0deg) scale(.93, 1.09); opacity: 1; animation-timing-function: ease-in; }
+  30%  { transform: translate(-1%, -2%) rotate(-2deg) scale(.97, 1.04); opacity: .95; animation-timing-function: ease-in; }
+  55%  { transform: translate(-3%, 7%) rotate(0deg) scale(1.14, .7); opacity: .8; animation-timing-function: ease-out; }
+  70%  { transform: translate(-3%, 5%) rotate(0deg) scale(1.03, .86); opacity: .78; animation-timing-function: ease-in-out; }
+  85%  { transform: translate(-3%, 6.5%) rotate(0deg) scale(1.1, .77); opacity: .76; animation-timing-function: ease-in-out; }
+  100% { transform: translate(-3%, 6%) rotate(0deg) scale(1.08, .8); opacity: .75; }
+}
+@keyframes kkakkung-lose-loop {
+  0%, 100% { transform: translate(-3%, 6%) rotate(0deg) scale(1.08, .8); }
+  50%      { transform: translate(-3%, 5.6%) rotate(0deg) scale(1.05, .83); }
+}
+@keyframes kkakkung-lose-shadow {
+  0%   { transform: scale(1, 1); opacity: 1; }
+  12%  { transform: scale(.9, .9); opacity: .8; }
+  55%, 100% { transform: scale(1.35, 1.1); opacity: 1; }
+}
+@keyframes kkakkung-lose-armL { 0% { transform: rotate(0deg); } 12% { transform: rotate(46deg); } 30% { transform: rotate(30deg); } 55% { transform: rotate(-22deg); } 75% { transform: rotate(-10deg); } 100% { transform: rotate(-16deg); } }
+@keyframes kkakkung-lose-armR {
+  0% { transform: rotate(0deg); } 12% { transform: rotate(-16deg); } 30% { transform: rotate(-8deg); } 55% { transform: rotate(15deg); } 75% { transform: rotate(7deg); } 100% { transform: rotate(10deg); }
+}
+@keyframes kkakkung-lose-lantern {
+  0% { transform: rotate(0deg); } 12% { transform: rotate(4deg); } 30% { transform: rotate(14deg); } 55% { transform: rotate(-26deg); }
+  72% { transform: rotate(-2deg); } 86% { transform: rotate(-15deg); } 100% { transform: rotate(-10deg); }
+}
+@keyframes kkakkung-lose-glows {   /* flickers, then goes out */
+  0%, 30% { transform: scale(1); opacity: 1; }
+  38% { transform: scale(.8); opacity: .25; }
+  44% { transform: scale(.95); opacity: .85; }
+  52% { transform: scale(.7); opacity: .1; }
+  58% { transform: scale(.85); opacity: .5; }
+  68%, 100% { transform: scale(.6); opacity: 0; }
+}
+@keyframes kkakkung-lose-dim { 0%, 52% { opacity: 0; } 70%, 100% { opacity: .42; } }
+@keyframes kkakkung-lose-hem {
+  0% { transform: skewX(0deg) scale(1, 1); } 12% { transform: skewX(0deg) scale(1, 1.12); }
+  30% { transform: skewX(-6deg) scale(1, 1.05); } 55% { transform: skewX(4deg) scale(1, .55); }
+  72% { transform: skewX(-3deg) scale(1, .72); } 86% { transform: skewX(1deg) scale(1, .58); } 100% { transform: skewX(0deg) scale(1, .62); } }
+@keyframes kkakkung-lose-wisp {   /* the spirit flame flares in surprise, then wilts */
+  0% { transform: rotate(0deg) scale(1, 1); } 12% { transform: rotate(0deg) scale(1.1, 1.35); }
+  30% { transform: rotate(8deg) scale(1, 1.1); } 55% { transform: rotate(-52deg) scale(.8, .7); }
+  75% { transform: rotate(-36deg) scale(.82, .74); } 100% { transform: rotate(-44deg) scale(.78, .7); } }
+@keyframes kkakkung-lose-face-a { 0% { opacity: 1; } 12%, 100% { opacity: 0; } }
+@keyframes kkakkung-lose-face-c { 0% { opacity: 0; } 12%, 100% { opacity: 1; } }
+@keyframes kkakkung-lose-dizzy { from { opacity: 0; } to { opacity: 1; } }
+
+/* ===================== REDUCED MOTION: static "까꿍!" pose (face-b from the shared rule) ===================== */
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .rig     { transform-origin: 50% 60%; transform: translate(0%, -3%) rotate(0deg) scale(1.06, 1.06); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .face-g  { opacity: 0; }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .armL    { transform: rotate(58deg); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .armR    { transform: rotate(-26deg); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .lantern { transform: rotate(26deg); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .glows   { transform: scale(1.2); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .hem     { transform: skewX(-4deg) scale(1, 1.08); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .wisp    { transform: rotate(-6deg) scale(1.15, 1.25); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .shadow  { transform: scale(1.1, 1); opacity: .8; }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="win"] .fx-sticker { opacity: 1; transform: scale(1) rotate(-10deg); animation: fighter-rm-fade .4s ease-out both !important; }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .rig     { transform: translate(-3%, 6%) rotate(0deg) scale(1.08, .8); opacity: .75; }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .shadow  { transform: scale(1.35, 1.1); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .armL    { transform: rotate(-16deg); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .armR    { transform: rotate(10deg); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .lantern { transform: rotate(-10deg); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .glows   { opacity: 0; }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .lantern .lan-dim { opacity: .42; }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .hem     { transform: skewX(0deg) scale(1, .62); }
+[data-motion="reduce"] .stage[data-char="kkakkung"][data-state="lose"] .wisp    { transform: rotate(-44deg) scale(.78, .7); }

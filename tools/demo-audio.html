@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>돌주먹 · sound demo</title>
+<style>
+  /* Dev harness for js/audio.js. Not shipped (tools/ is outside the SW cache).
+     Every button is a real tap, so it also unlocks audio on iPhone (the first tap anywhere does).
+     "오프라인 측정" renders every sound through an OfflineAudioContext with the same synthesis code
+     and prints length / peak / loudness / spectrum. tests/audio.test.js drives the same
+     window.audioQA from Playwright, so the numbers here are the numbers the test asserts on.
+     Query: ?qa=1 runs the measurement on load. */
+  :root { --bg:#17121F; --bg2:#221A2E; --bg3:#2E2440; --ink:#2A1E2F; --line:#3B2F4F; --text:#FFF4DE; --dim:#BBAFCF;
+    --p1:#FF4757; --p2:#2E9BFF; --gold:#FFD23F; --lime:#B6FF4D; --mint:#3FE0B5; --danger:#FF3B30; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.45 -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif; word-break: keep-all; }
+  main { max-width: 980px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 14px 60px; }
+  h1 { font-size: 22px; margin: 4px 0 2px; }
+  h2 { font-size: 15px; color: var(--dim); margin: 22px 0 8px; font-weight: 700; }
+  .sub { color: var(--dim); font-size: 13px; margin: 0 0 12px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px; background: var(--bg2);
+    border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 4px 0 var(--ink); }
+  .bar label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+  input[type=range] { width: 160px; accent-color: var(--gold); }
+  input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--gold); }
+  .grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 12px; border: 3px solid var(--ink);
+    background: var(--bg3); color: var(--text); font: inherit; font-weight: 700; box-shadow: 0 4px 0 var(--ink);
+    touch-action: manipulation; cursor: pointer; }
+  button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  button:disabled { opacity: .4; cursor: default; }
+  button.char { background: #3A2A1C; }
+  button.drum { background: #1C2E3A; }
+  button.primary { background: var(--gold); color: var(--ink); }
+  .place { display: grid; grid-template-columns: auto repeat(3, minmax(64px, auto)); gap: 8px; align-items: center; }
+  .place b { font-weight: 700; color: var(--dim); font-size: 14px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; vertical-align: -2px; margin-right: 4px; border: 1px solid #000; }
+  .dot.b { background: #141416; } .dot.w { background: #F1F1EC; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+  .card { padding: 10px 12px 12px; border: 3px solid var(--ink); border-radius: 16px; background: var(--bg2); box-shadow: 0 4px 0 var(--ink); }
+  .card h3 { margin: 0 0 2px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .card .sw { width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--ink); }
+  .card p { margin: 0 0 8px; color: var(--dim); font-size: 12px; font-family: ui-monospace, monospace; }
+  .card.missing { opacity: .55; }
+  .card .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  #status { font: 12px/1.4 ui-monospace, monospace; color: var(--dim); }
+  table { border-collapse: collapse; width: 100%; font: 12px/1.3 ui-monospace, monospace; }
+  th, td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--dim); font-weight: 600; position: sticky; top: 0; background: var(--bg); }
+  td.bad { color: var(--danger); font-weight: 700; }
+  td.spec { padding: 2px 4px; }
+  td.spec canvas { display: block; width: 220px; height: 44px; border-radius: 4px; background: #0B0810; image-rendering: pixelated; }
+  .tablewrap { overflow-x: auto; border: 3px solid var(--ink); border-radius: 12px; background: var(--bg2); }
+  #qaSummary { margin: 8px 0; font-size: 14px; }
+  #qaSummary.ok { color: var(--lime); } #qaSummary.fail { color: var(--danger); }
+  .legend { color: var(--dim); font-size: 12px; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>돌주먹 · 사운드</h1>
+  <p class="sub">Web Audio 합성음 전부. 아이폰에서는 첫 탭이 오디오 잠금 해제 · 무음 스위치를 켜 두면 기본(ambient)에서는 소리가 안 나요.</p>
+
+  <div class="bar">
+    <label>소리 크기 <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8"> <span id="volOut">0.80</span></label>
+    <label><input id="enabled" type="checkbox" checked> 효과음</label>
+    <label><input id="silent" type="checkbox"> 무음 모드에서도 소리</label>
+    <button id="stop">모두 멈춤</button>
+    <span id="status">AudioContext: 아직 없음 (아무 데나 탭)</span>
+  </div>
+
+  <h2>착수음 · 테마 × 돌 (매번 ±6% 변화, 백돌 +8% 밝게)</h2>
+  <div class="place" id="place"></div>
+
+  <h2>UI 효과음</h2>
+  <div class="grid" id="ui"></div>
+
+  <h2>캐릭터 효과음 · 드럼</h2>
+  <div class="grid" id="charSfx"></div>
+
+  <h2>캐릭터 징글 (js/chars/*.js가 있으면 불러옴)</h2>
+  <div class="cards" id="chars"></div>
+
+  <h2>오프라인 측정 (OfflineAudioContext · 볼륨 1.0 = 최악의 경우)</h2>
+  <div class="bar">
+    <button class="primary" id="qaRun">측정 실행</button>
+    <span class="legend">peak = 압축기 출력(겹침은 가드 포함, 괄호는 가드 전) · 음량 = 최대 50 ms RMS · 폰 = 300 Hz 하이패스 후 · 대역 = 에너지 비율 · 스펙트로그램 50 Hz–16 kHz(로그), 초록 선 = 300 Hz</span>
+  </div>
+  <div id="qaSummary"></div>
+  <div class="tablewrap"><table id="qa"><thead><tr>
+    <th>소리</th><th>길이 ms</th><th>기대 ms</th><th>peak</th><th>음량 dB</th><th>폰 dB</th><th>폰 손실</th>
+    <th>&lt;300</th><th>600–3k</th><th>스펙트로그램</th>
+  </tr></thead><tbody></tbody></table></div>
+</main>
+
+<script type="module">
+import {
+  audio, SFX_NAMES, CHAR_SFX, DRUMS, PLACE_THEMES, patchFor, createGraph, scheduleSfx, scheduleJingle, parseJingle,
+} from '../js/audio.js';
+
+const $ = (id) => document.getElementById(id);
+const IDS = ['bulttong', 'nyangja', 'bigom', 'beonjjeok', 'jaepjaep', 'ppibik', 'kkakkung', 'taenggeul'];
+const KO = { bulttong: '불똥', nyangja: '냥자', bigom: '비곰', beonjjeok: '번쩍', jaepjaep: '잽잽', ppibik: '삐빅', kkakkung: '까꿍', taenggeul: '탱글' };
+const THEME_KO = { mat: '배틀 장판', neon: '네온', dojo: '도장', pixel: '8비트', wood: '원목' };
+
+// ------------------------------------------------------------------ live playback
+audio.init({ sound: true, volume: 0.8, ignoreSilent: false });
+
+function btn(label, onClick, cls = '') {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = label;
+  if (cls) b.className = cls;
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+$('vol').addEventListener('input', (e) => {
+  audio.setVolume(Number(e.target.value));
+  $('volOut').textContent = Number(e.target.value).toFixed(2);
+});
+$('enabled').addEventListener('change', (e) => audio.setEnabled(e.target.checked));
+$('silent').addEventListener('change', (e) => audio.setIgnoreSilent(e.target.checked));
+$('stop').addEventListener('click', () => { audio.stopAll(); clearTimers(); });
+
+// status line: the live context is private to audio.js, so show what the page can know
+setInterval(() => {
+  const s = navigator.audioSession ? ` · audioSession=${navigator.audioSession.type}` : '';
+  const ua = navigator.userActivation ? ` · activation=${navigator.userActivation.hasBeenActive ? 'yes' : 'no'}` : '';
+  $('status').textContent = `enabled=${audio.isEnabled()}${s}${ua}`;
+}, 500);
+
+for (const theme of PLACE_THEMES) {
+  const row = $('place');
+  const label = document.createElement('b');
+  label.textContent = THEME_KO[theme] || theme;
+  row.append(label);
+  for (const color of [1, 2]) {
+    const b = btn('', () => audio.play('place', { color, theme }));
+    b.innerHTML = `<span class="dot ${color === 1 ? 'b' : 'w'}"></span>${color === 1 ? '흑' : '백'}`;
+    row.append(b);
+  }
+  // five stones in a row, alternating colours: hear the per-stone variation
+  row.append(btn('연타 ×6', () => {
+    for (let i = 0; i < 6; i++) later(() => audio.play('place', { color: 1 + (i % 2), theme }), i * 260);
+  }));
+}
+
+for (const name of SFX_NAMES) if (name !== 'place') $('ui').append(btn(name, () => audio.play(name)));
+for (const name of CHAR_SFX) $('charSfx').append(btn(name, () => audio.play(name), 'char'));
+for (const name of DRUMS.filter((d) => !CHAR_SFX.includes(d))) $('charSfx').append(btn(name, () => audio.play(name), 'drum'));
+
+const timers = new Set();
+function later(fn, ms) {
+  const id = setTimeout(() => { timers.delete(id); fn(); }, ms);
+  timers.add(id);
+}
+function clearTimers() { for (const id of timers) clearTimeout(id); timers.clear(); }
+
+// ------------------------------------------------------------------ character jingles
+const chars = new Map();
+async function loadChars() {
+  const host = $('chars');
+  await Promise.all(IDS.map(async (id) => {
+    const card = document.createElement('div');
+    card.className = 'card missing';
+    card.innerHTML = `<h3><span class="sw"></span>${KO[id]} <small style="color:var(--dim);font-weight:400">${id}</small></h3><p>불러오는 중…</p><div class="row"></div>`;
+    host.append(card);
+    let c = null;
+    try { c = (await import(`../js/chars/${id}.js`)).default; } catch { c = null; }
+    const info = card.querySelector('p');
+    const row = card.querySelector('.row');
+    if (!c || !c.jingle) {
+      info.textContent = '아직 없음 (js/chars/' + id + '.js)';
+      row.append(btn('징글', () => {}, ''));
+      row.firstChild.disabled = true;
+      return;
+    }
+    chars.set(id, c);
+    card.classList.remove('missing');
+    card.querySelector('.sw').style.background = c.color || '#888';
+    const p = parseJingle(c.jingle);
+    info.textContent = `징글 ${p.total} ms · at ${c.jingle.at}s · 큐 ${(c.cues || []).filter((q) => q.sfx).length}개` + (p.errors.length ? ` · 오류 ${p.errors.length}` : '');
+    if (p.errors.length) info.title = p.errors.join('\n');
+    let current = null;
+    row.append(btn('징글', () => { current?.stop(); current = audio.jingle(c.jingle); }));
+    // the whole 2.4 s victory soundtrack: cue sounds on wall-clock timers, the jingle on the
+    // audio clock (as js/fighter.js does), so drift between them would be audible here
+    row.append(btn('승리 사운드 전체', () => {
+      current?.stop();
+      clearTimers();
+      current = audio.jingle(c.jingle, { delay: c.jingle.at });
+      for (const q of c.cues || []) if (q.sfx) later(() => audio.play(q.sfx), q.t * 1000);
+    }));
+    if (c.turnSfx) row.append(btn(`차례 ${c.turnSfx}`, () => audio.play(c.turnSfx), 'char'));
+  }));
+  // keep the roster order regardless of load order
+  for (const id of IDS) {
+    const card = [...host.children].find((el) => el.querySelector('small')?.textContent === id);
+    if (card) host.append(card);
+  }
+}
+const charsReady = loadChars();
+
+// ------------------------------------------------------------------ offline measurement
+const SR = 48000;
+
+function seeded(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// nominal length of a patch in ms (what the table asks for, before reverb)
+function nominalMs(patch) {
+  if (patch.tune) return parseJingle(patch.tune).total;
+  let end = 0;
+  for (const L of patch.layers) end = Math.max(end, (L.at || 0) + (L.dur ?? ((L.attack ?? 1) + (L.hold || 0) + 6 * (L.tau || 0))));
+  return end;
+}
+
+// in-place radix-2 FFT
+function fft(re, im) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const ang = -2 * Math.PI / len;
+    const wr = Math.cos(ang), wi = Math.sin(ang);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < len / 2; k++) {
+        const ar = re[i + k], ai = im[i + k];
+        const br = re[i + k + len / 2] * cr - im[i + k + len / 2] * ci;
+        const bi = re[i + k + len / 2] * ci + im[i + k + len / 2] * cr;
+        re[i + k] = ar + br; im[i + k] = ai + bi;
+        re[i + k + len / 2] = ar - br; im[i + k + len / 2] = ai - bi;
+        const t = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = t;
+      }
+    }
+  }
+}
+
+// RBJ biquad high-pass (applied twice = 4th order): a stand-in for an iPhone speaker's low end
+function highpass(x, f0, sr) {
+  const w = 2 * Math.PI * f0 / sr, a = Math.sin(w) / (2 * Math.SQRT1_2), cw = Math.cos(w);
+  const b0 = (1 + cw) / 2, b1 = -(1 + cw), b2 = (1 + cw) / 2, a0 = 1 + a, a1 = -2 * cw, a2 = 1 - a;
+  const y = new Float32Array(x.length);
+  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  for (let i = 0; i < x.length; i++) {
+    const v = (b0 * x[i] + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2) / a0;
+    x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v;
+  }
+  return y;
+}
+
+const dB = (v) => (v > 0 ? 20 * Math.log10(v) : -Infinity);
+
+function peakOf(buf) {
+  let p = 0;
+  for (let ch = 0; ch < buf.numberOfChannels; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i = 0; i < d.length; i++) { const v = Math.abs(d[i]); if (v > p) p = v; }
+  }
+  return p;
+}
+
+function analyse(buf) {
+  const L = buf.getChannelData(0);
+  const R = buf.numberOfChannels > 1 ? buf.getChannelData(1) : L;
+  const n = L.length;
+  const mono = new Float32Array(n);
+  let peak = 0;
+  for (let i = 0; i < n; i++) {
+    peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
+    mono[i] = (L[i] + R[i]) / 2;
+  }
+  const TH = 0.001;                                  // -60 dBFS
+  let first = -1, last = -1;
+  for (let i = 0; i < n; i++) if (Math.abs(L[i]) > TH || Math.abs(R[i]) > TH) { if (first < 0) first = i; last = i; }
+  const active = first < 0 ? 0 : last - first + 1;
+  let sum = 0;
+  for (let i = Math.max(0, first); i <= last; i++) sum += mono[i] * mono[i];
+  const rms = active ? Math.sqrt(sum / active) : 0;
+  // loudness = the loudest 50 ms window; "phone" = the same after a 4th-order 300 Hz high-pass,
+  // a stand-in for an iPhone speaker that gives almost nothing below 300 Hz
+  const W = Math.round(0.05 * SR);
+  const loudest = (x) => {
+    let acc = 0, best = 0;
+    for (let i = 0; i < x.length; i++) {
+      acc += x[i] * x[i];
+      if (i >= W) acc -= x[i - W] * x[i - W];
+      if (i >= W - 1) best = Math.max(best, acc);
+    }
+    return Math.sqrt(Math.max(0, best) / W);
+  };
+  const full = loudest(mono);
+  const phone = loudest(highpass(highpass(mono, 300, SR), 300, SR));
+  // band energies: Welch average of 4096-point Hann frames over the active part
+  const N = 4096;
+  const bands = { low: 0, mid: 0, phone: 0, all: 0 };
+  if (active) {
+    for (let s = Math.max(0, first - N / 2); s < last; s += 1024) {
+      const re = new Float64Array(N), im = new Float64Array(N);
+      for (let i = 0; i < N; i++) re[i] = (s + i < n ? mono[s + i] : 0) * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1)));
+      fft(re, im);
+      for (let k = 1; k < N / 2; k++) {
+        const p = re[k] * re[k] + im[k] * im[k];
+        const f = k * SR / N;
+        bands.all += p;
+        if (f < 300) bands.low += p; else bands.phone += p;
+        if (f >= 600 && f <= 3000) bands.mid += p;
+      }
+    }
+  }
+  // display spectrogram: 1024-point frames, ~220 columns across the sound's own length
+  const spec = [];
+  if (active) {
+    const M = 1024;
+    const hop = Math.max(16, Math.floor(active / 220));
+    for (let s = Math.max(0, first - M / 2); s < last; s += hop) {
+      const re = new Float64Array(M), im = new Float64Array(M);
+      for (let i = 0; i < M; i++) re[i] = (s + i < n ? mono[s + i] : 0) * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / (M - 1)));
+      fft(re, im);
+      const col = new Float32Array(M / 2);
+      for (let k = 1; k < M / 2; k++) col[k] = re[k] * re[k] + im[k] * im[k];
+      spec.push(col);
+    }
+  }
+  const frac = (x) => (bands.all > 0 ? x / bands.all : 0);
+  return {
+    peak, rms, rmsDb: dB(rms), fullDb: dB(full), phoneDb: dB(phone), loss: dB(full) - dB(phone),
+    firstMs: first / SR * 1000, durMs: active / SR * 1000,
+    low: frac(bands.low), mid: frac(bands.mid), phoneFrac: frac(bands.phone), spec,
+  };
+}
+
+function drawSpec(canvas, spec) {
+  const w = 220, h = 44;
+  canvas.width = w; canvas.height = h;
+  const g2 = canvas.getContext('2d');
+  const img = g2.createImageData(w, h);
+  const M = 1024;
+  const cols = spec.length || 1;
+  let max = 1e-12;
+  for (const col of spec) for (let k = 1; k < col.length; k++) if (col[k] > max) max = col[k];
+  const top = 10 * Math.log10(max);
+  for (let x = 0; x < w; x++) {
+    const col = spec[Math.min(cols - 1, Math.floor(x / w * cols))];
+    for (let y = 0; y < h; y++) {
+      const f = 50 * Math.pow(16000 / 50, 1 - y / (h - 1));
+      const k = Math.max(1, Math.min(M / 2 - 1, Math.round(f * M / SR)));
+      const v = col ? 10 * Math.log10(col[k] + 1e-12) - top : -120;
+      const t = Math.max(0, Math.min(1, (v + 60) / 60));           // 60 dB range below the peak
+      const o = (y * w + x) * 4;
+      img.data[o] = 255 * Math.min(1, t * 1.6);
+      img.data[o + 1] = 255 * Math.max(0, t * 1.4 - 0.4);
+      img.data[o + 2] = 60 + 140 * Math.max(0, t - 0.6);
+      img.data[o + 3] = 255;
+    }
+  }
+  g2.putImageData(img, 0, 0);
+  // 300 Hz guide (below it an iPhone speaker gives almost nothing)
+  const y300 = (1 - Math.log(300 / 50) / Math.log(16000 / 50)) * (h - 1);
+  g2.fillStyle = 'rgba(63,224,181,.7)';
+  g2.fillRect(0, Math.round(y300), w, 1);
+}
+
+// one offline render: kind 'sfx' (name, opts) or 'jingle' (spec); `extra` lets a test pile sounds up
+// The compressor starts cold: its make-up gain ramps in over the first ~100 ms of a context's
+// life, which would hide up to 10 dB. A live context has long been running when a sound plays, so
+// every render places its sound at WARM_S.
+const WARM_S = 0.3;
+async function render({ name, opts, spec, extra = [], seconds = 3.2, volume = 1, guard = true, seed = 1 }) {
+  const oc = new OfflineAudioContext(2, Math.round(SR * (seconds + WARM_S)), SR);
+  const graph = createGraph(oc, { volume, random: seeded(1233 + seed), guard });
+  const t0 = WARM_S;
+  if (spec) scheduleJingle(graph, spec, t0);
+  else scheduleSfx(graph, name, t0, opts || {});
+  for (const x of extra) {
+    if (x.spec) scheduleJingle(graph, x.spec, t0 + (x.at || 0));
+    else scheduleSfx(graph, x.name, t0 + (x.at || 0), x.opts || {});
+  }
+  return oc.startRendering();
+}
+
+// The list the QA walks: every UI sound (place in every theme × colour), every cue sound, the kit,
+// every character jingle that exists, and three pile-ups for clipping.
+async function cases() {
+  await charsReady;
+  const out = [];
+  const one = (id, group, name, opts) => {
+    const p = patchFor(name, opts);
+    out.push({ id, group, name, opts, nominal: nominalMs(p), rev: p.rev || 0, small: !!p.small });
+  };
+  for (const theme of PLACE_THEMES) for (const color of [1, 2]) one(`place/${theme}/${color === 1 ? 'b' : 'w'}`, 'place', 'place', { color, theme });
+  for (const name of SFX_NAMES) if (name !== 'place') one(name, 'ui', name);
+  for (const name of CHAR_SFX) one(name, 'char', name);
+  for (const name of ['K', 'S', 'H']) one(`kit ${name}`, 'kit', name);
+  for (const [id, c] of chars) out.push({ id: `jingle ${id}`, group: 'jingle', spec: c.jingle, nominal: parseJingle(c.jingle).total, rev: 0.1 });
+  const jingles = [...chars.values()].map((c) => c.jingle);
+  // battle.js koSeq at "보통": the fifth stone, the K.O. hit 250 ms later, roundWin at 1.4 s
+  out.push({ id: 'stress K.O. 보통', group: 'stress', name: 'place', opts: { color: 1, theme: 'mat' }, nominal: 2100, rev: 0.35,
+    extra: [{ name: 'ko', at: 0.25 }, { name: 'roundWin', at: 1.4 }] });
+  // "최소" speed fires the K.O., the match fanfare and the stone together; add a jingle on top
+  out.push({ id: 'stress K.O. 최소', group: 'stress', name: 'place', opts: { color: 2, theme: 'neon' }, nominal: 1600, rev: 0.35,
+    extra: [{ name: 'ko' }, { name: 'matchWin' }, ...(jingles[0] ? [{ spec: jingles[0] }] : [])] });
+  // unrealistic: everything loud at once; only the guard keeps this under 0.99
+  out.push({ id: 'stress pile-up', group: 'stress', name: 'ko', nominal: 1600, rev: 0.35,
+    extra: [{ name: 'place', opts: { color: 1, theme: 'mat' } }, { name: 'vs' }, { name: 'matchWin', at: 0.05 }, { name: 'fight', at: 0.1 },
+      { name: 'BELL' }, { name: 'PUNCH' }, ...jingles.slice(0, 3).map((spec) => ({ spec, at: 0.02 }))] });
+  return out;
+}
+
+// Expected length: the table's own length, give or take; reverb adds a tail.
+function expect(cs) {
+  const lo = Math.max(4, cs.nominal * 0.45);
+  const hi = cs.nominal + 160 + (cs.rev ? 1700 : 0) + (cs.group === 'jingle' ? 1300 : 0);
+  return [lo, hi];
+}
+
+// Pass rules (tests/audio.test.js asserts the same):
+//   audible   peak ≥ 0.01 and phone loudness ≥ −42 dB
+//   headroom  a single sound peaks ≤ 0.85 straight out of the compressor (rendered without the
+//             guard, worst of several noise seeds), so the guard never has to act for it;
+//             pile-ups ≤ 0.99 through the real chain
+//   length    within the table's own length (see expect())
+//   phone     UI and cue sounds lose ≤ 12 dB to a 300 Hz high-pass (built for a phone speaker)
+//   place     ≥ 35 % of the stone's energy in 600 Hz–3 kHz
+const RULES = { audibleDb: -42, single: 0.85, stacked: 0.99, phoneLoss: 12, placeMid: 0.35 };
+
+async function measure(cs) {
+  const stacked = cs.group === 'stress';
+  const m = analyse(await render({ ...cs, guard: stacked }));
+  // Live playback starts every noise layer at a random offset, and a sharp transient's peak
+  // depends on that luck (the compressor's make-up gain lands before its gain reduction does):
+  // render other seeds too and keep the worst peak.
+  const others = await Promise.all([2, 3, 4, 5, 6].map((seed) => render({ ...cs, guard: stacked, seed })));
+  for (const buf of others) m.peak = Math.max(m.peak, peakOf(buf));
+  const [lo, hi] = expect(cs);
+  const row = { id: cs.id, group: cs.group, nominal: cs.nominal, small: !!cs.small, lo, hi, ...m };
+  delete row.spec;
+  if (stacked) row.rawPeak = peakOf(await render({ ...cs, guard: false }));
+  row.fail = [];
+  if (!(m.peak >= 0.01) || !(m.phoneDb >= RULES.audibleDb)) row.fail.push('silent');
+  if (m.peak > (stacked ? RULES.stacked : RULES.single)) row.fail.push('clip');
+  if (m.durMs < lo || m.durMs > hi) row.fail.push('length');
+  if ((cs.group === 'ui' || cs.group === 'char' || cs.group === 'place') && m.loss > RULES.phoneLoss) row.fail.push('phone');
+  if (cs.group === 'place' && m.mid < RULES.placeMid) row.fail.push('place-mid');
+  return { row, spec: m.spec };
+}
+
+async function run({ draw = true } = {}) {
+  const rows = [];
+  const body = $('qa').tBodies[0];
+  if (draw) body.textContent = '';
+  for (const cs of await cases()) {
+    const { row, spec } = await measure(cs);
+    rows.push(row);
+    if (!draw) continue;
+    const tr = document.createElement('tr');
+    const cell = (v, bad = false) => { const td = document.createElement('td'); td.textContent = v; if (bad) td.className = 'bad'; tr.append(td); };
+    cell(row.id, row.fail.length > 0);
+    cell(row.durMs.toFixed(0), row.fail.includes('length'));
+    cell(`${row.lo.toFixed(0)}–${row.hi.toFixed(0)}`);
+    cell(row.peak.toFixed(3) + (row.rawPeak ? ` (${row.rawPeak.toFixed(2)})` : ''), row.fail.includes('clip'));
+    cell(row.fullDb.toFixed(1));
+    cell(row.phoneDb.toFixed(1), row.fail.includes('silent'));
+    cell(row.loss.toFixed(1), row.fail.includes('phone'));
+    cell((row.low * 100).toFixed(0) + '%');
+    cell((row.mid * 100).toFixed(0) + '%', row.fail.includes('place-mid'));
+    const td = document.createElement('td');
+    td.className = 'spec';
+    const cv = document.createElement('canvas');
+    drawSpec(cv, spec);
+    td.append(cv);
+    tr.append(td);
+    body.append(tr);
+  }
+  const bad = rows.filter((r) => r.fail.length);
+  if (draw) {
+    $('qaSummary').className = bad.length ? 'fail' : 'ok';
+    $('qaSummary').textContent = bad.length
+      ? `${bad.length}/${rows.length} 실패: ` + bad.map((r) => `${r.id}(${r.fail.join(',')})`).join(' ')
+      : `${rows.length}개 전부 통과 · 들림(폰 ≥ ${RULES.audibleDb} dB) · 단일 peak ≤ ${RULES.single} · 겹침 peak ≤ ${RULES.stacked} · 길이 · 폰 손실 ≤ ${RULES.phoneLoss} dB · 착수음 600 Hz–3 kHz ≥ ${RULES.placeMid * 100}%`;
+  }
+  return rows;
+}
+
+$('qaRun').addEventListener('click', () => run());
+window.audioQA = { run, measure, render, analyse, cases, RULES, ready: charsReady };
+if (new URLSearchParams(location.search).get('qa') === '1') run();
+</script>
+</body>
+</html>

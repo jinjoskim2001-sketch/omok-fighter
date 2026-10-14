@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>돌주먹 · board demo</title>
+<style>
+  /* Dev harness for js/board.js + js/themes.js. Not shipped (tools/ is outside the SW cache).
+     Query: ?theme=mat|neon|dojo|pixel|wood  &input=double|single  &pos=empty|mid|win
+            &marks=1 (forbidden preview)  &reduce=1  &shot=1 (hide the dev panel)
+            &haptic=1 (cover the board with the iOS haptic <label><input switch> overlay that
+            js/haptics.js adds on iPhone, so it becomes the event target as on the device) */
+  html, body { margin: 0; background: #17121F; color: #FFF4DE;
+    font: 15px/1.4 -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif; word-break: keep-all; }
+  #screen { position: relative; height: 100vh; height: 100dvh; display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top); box-sizing: border-box; overflow: hidden; }
+  .hud { flex: 0 0 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; }
+  .pl { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; background: #221A2E;
+    border: 3px solid #2A1E2F; box-shadow: 0 4px 0 #2A1E2F; opacity: .5; transition: opacity .2s, transform .2s, box-shadow .2s; }
+  .pl.on { opacity: 1; transform: scale(1.04); }
+  .pl[data-p="1"].on { box-shadow: 0 4px 0 #2A1E2F, 0 0 14px #FF4757; }
+  .pl[data-p="2"].on { box-shadow: 0 4px 0 #2A1E2F, 0 0 14px #2E9BFF; }
+  .tag { font-weight: 800; font-size: 13px; }
+  .pl[data-p="1"] .tag { color: #FF4757; } .pl[data-p="2"] .tag { color: #2E9BFF; }
+  .dot { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+  .dot.b { background: radial-gradient(circle at 35% 30%, #7A7A80, #141416 65%, #000); }
+  .dot.w { background: radial-gradient(circle at 35% 30%, #fff, #F1F1EC 55%, #A9A99E); }
+  .round { font-weight: 900; letter-spacing: .04em; }
+  /* the board host: the real UI sizes this; here it is the SPEC's min(width − 12, …, 560) */
+  #host { flex: 0 0 auto; height: min(calc(100vw - 12px), 560px, calc(100dvh - 64px - 88px - 56px - env(safe-area-inset-top)));
+    margin: 0 6px; }
+  .stage { flex: 1 1 auto; min-height: 88px; display: flex; align-items: flex-end; justify-content: space-around;
+    padding-bottom: 6px; color: rgba(255,244,222,.35); font-size: 12px; }
+  .bar { flex: 0 0 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+    padding-bottom: env(safe-area-inset-bottom); }
+  .bar button, #panel button, #panel select { min-height: 44px; min-width: 44px; border-radius: 12px; border: 3px solid #2A1E2F;
+    background: #2E2440; color: #FFF4DE; font: inherit; font-weight: 700; box-shadow: 0 4px 0 #2A1E2F; padding: 0 12px;
+    touch-action: manipulation; }
+  .bar .turn { font-weight: 800; }
+  #toast { position: absolute; left: 50%; top: 110px; transform: translate(-50%, 0); background: #FFF4DE; color: #2A1E2F;
+    font-weight: 900; padding: 10px 16px; border-radius: 14px; border: 3px solid #2A1E2F; box-shadow: 0 4px 0 #2A1E2F;
+    opacity: 0; transition: opacity .15s; pointer-events: none; z-index: 80; white-space: nowrap; }
+  #toast.on { opacity: 1; }
+  #panel { padding: 14px 10px 40px; display: flex; flex-wrap: wrap; gap: 10px; background: #221A2E; }
+  #panel h2 { flex: 1 0 100%; margin: 6px 0 0; font-size: 14px; color: #BBAFCF; }
+  #panel label { display: flex; align-items: center; gap: 6px; }
+  #log { flex: 1 0 100%; font: 12px/1.4 ui-monospace, monospace; color: #BBAFCF; white-space: pre-wrap; max-height: 9em; overflow: auto; }
+  body.shot #panel { display: none; }
+</style>
+</head>
+<body>
+<div id="screen">
+  <div class="hud">
+    <div class="pl on" data-p="1"><span class="tag">1P</span><span class="dot b"></span><span>비곰</span></div>
+    <div class="round">R 1</div>
+    <div class="pl" data-p="2"><span>냥자</span><span class="dot w"></span><span class="tag">2P</span></div>
+  </div>
+  <div id="host"></div>
+  <div class="stage"><span>(무대)</span><span>(무대)</span></div>
+  <div class="bar">
+    <button id="undo" type="button">무르기</button>
+    <span class="turn" id="turn">차례: 1P ●흑</span>
+    <button id="reset" type="button">새 판</button>
+  </div>
+  <div id="toast"></div>
+</div>
+<div id="panel">
+  <h2>테마</h2>
+  <select id="theme"></select>
+  <h2>입력</h2>
+  <label><input type="radio" name="input" value="double" checked> 두 번 탭</label>
+  <label><input type="radio" name="input" value="single"> 바로 착수</label>
+  <h2>배치 · 연출</h2>
+  <button id="mid" type="button">중반 배치</button>
+  <button id="winpos" type="button">승리 장면</button>
+  <button id="showwin" type="button">승리 라인 다시</button>
+  <button id="flash" type="button">금수 플래시 (13,3)</button>
+  <label><input type="checkbox" id="marks"> 금수 미리 표시</label>
+  <label><input type="checkbox" id="lock"> 입력 잠금</label>
+  <label><input type="checkbox" id="reduce"> data-motion=reduce</label>
+  <button id="timeout" type="button">시간 초과 (commitArmed)</button>
+  <div id="log"></div>
+</div>
+<script type="module">
+import { createBoard, geometry, THEMES, THEME_IDS } from '../js/board.js';
+import { N, BLACK, WHITE, judgeMove, isForbidden } from '../js/rules.js';
+
+const q = new URLSearchParams(location.search);
+const $ = (id) => document.getElementById(id);
+const ACCENT = { [BLACK]: '#FF4757', [WHITE]: '#2E9BFF' };   // demo: 1P plays black
+
+// 30 stones from a plausible opening; black to move, and (13,3) is a 3-3 point for black.
+const MID = [[7,7],[8,6],[8,8],[6,6],[9,9],[10,10],[6,8],[9,7],[7,8],[5,8],[9,8],[10,8],[7,9],[7,6],[5,6],
+  [9,6],[10,6],[8,10],[6,10],[8,9],[5,9],[4,10],[11,3],[11,9],[12,3],[6,5],[13,4],[3,9],[13,5],[10,4]];
+// …then black runs down column 7 and white looks the other way.
+const WIN = MID.concat([[7,10],[3,11],[7,11]]);
+
+const game = { b: new Int8Array(N * N), moves: [], color: BLACK, over: false,
+  log: [], commits: [], arms: [], rejects: [], sfx: [], hapticClicks: 0 };
+window.demo = { game };
+
+function log(s) {
+  game.log.push(s);
+  $('log').textContent = game.log.slice(-40).join('\n');
+  $('log').scrollTop = 1e9;
+}
+let toastTimer = 0;
+function toast(s, ms = 900) {
+  const t = $('toast');
+  t.textContent = s;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+function canPlace(idx) {
+  if (game.over) return { ok: false, reason: 'over' };
+  const j = judgeMove(game.b, idx % N, (idx / N) | 0, game.color);
+  return j.ok ? { ok: true } : { ok: false, reason: j.reason };
+}
+
+function setTurnUI() {
+  document.querySelectorAll('.pl').forEach((p) => p.classList.toggle('on', +p.dataset.p === game.color));
+  $('turn').textContent = game.color === BLACK ? '차례: 1P ●흑' : '차례: 2P ○백';
+  board.setTurn(game.color, ACCENT[game.color]);
+  refreshMarks();
+}
+
+function refreshMarks() {
+  if (!$('marks').checked || game.over) { board.setForbiddenMarks(null); return; }
+  const list = [];
+  for (let i = 0; i < N * N; i++) if (!game.b[i] && isForbidden(game.b, i % N, (i / N) | 0, game.color)) list.push(i);
+  board.setForbiddenMarks(list);
+}
+
+function play(idx, animate = true) {
+  const x = idx % N, y = (idx / N) | 0, c = game.color;
+  const j = judgeMove(game.b, x, y, c);
+  if (!j.ok) { log(`play rejected ${x},${y} ${j.reason}`); return false; }
+  game.b[idx] = c;
+  game.moves.push(idx);
+  board.place(idx, c, { animate });
+  if (j.overline) toast('6목은 승리가 아니에요');
+  if (j.win) {
+    game.over = true;
+    board.setLocked(true);
+    board.setForbiddenMarks(null);
+    if (animate) {
+      setTimeout(() => board.showWin(j.line).then(() => log('showWin resolved')), 250);
+      toast('K.O.!', 1600);
+    } else {
+      board.showWin(j.line);
+    }
+    log(`win ${c === BLACK ? 'black' : 'white'} ${JSON.stringify(j.line)}`);
+    return true;
+  }
+  game.color = c === BLACK ? WHITE : BLACK;
+  setTurnUI();
+  return true;
+}
+
+function load(list) {
+  game.b.fill(0); game.moves = []; game.color = BLACK; game.over = false;
+  board.setLocked($('lock').checked);
+  board.setPosition(game.b, -1);
+  for (const [x, y] of list) play(y * N + x, false);
+  board.setPosition(game.b, game.moves.length ? game.moves[game.moves.length - 1] : -1);
+  setTurnUI();
+}
+
+const theme = THEME_IDS.includes(q.get('theme')) ? q.get('theme') : 'mat';
+const board = createBoard($('host'), {
+  theme,
+  input: q.get('input') === 'single' ? 'single' : 'double',
+  canPlace,
+  onCommit(idx) { game.commits.push(idx); log(`commit ${idx % N},${(idx / N) | 0}`); play(idx); },
+  onArm(idx) {
+    game.arms.push(idx);
+    log(`arm ${idx % N},${(idx / N) | 0}`);
+    if (game.arms.length <= 3) toast('한 번 더 탭하면 착수!');
+  },
+  onReject(idx, reason) {
+    game.rejects.push({ idx, reason });
+    log(`reject ${idx % N},${(idx / N) | 0} ${reason}`);
+    if (reason === '33') toast('쌍삼 금지!');
+    if (reason === '44') toast('쌍사 금지!');
+  },
+  sfx(name) { game.sfx.push(name); },
+});
+window.demo.board = board;
+
+// Same overlay pumal's haptics.js puts on a host on iOS: a transparent <label> over the whole
+// board wrapping a hidden <input switch>. The finger lands on the label, not on our canvases.
+if (q.get('haptic') === '1') {
+  const label = document.createElement('label');
+  label.setAttribute('data-haptic-trigger', '');
+  label.style.cssText = 'position:absolute;inset:0;display:block;margin:0;touch-action:manipulation;border-radius:inherit;-webkit-tap-highlight-color:transparent';
+  const sw = document.createElement('input');
+  sw.type = 'checkbox';
+  sw.setAttribute('switch', '');
+  sw.tabIndex = -1;
+  sw.style.cssText = 'position:absolute;width:1px;height:1px;margin:0;visibility:hidden';
+  sw.addEventListener('click', (e) => { e.stopPropagation(); window.demo.game.hapticClicks = (window.demo.game.hapticClicks || 0) + 1; });
+  label.append(sw);
+  board.el.append(label);
+}
+// Client coordinates of intersection (x, y), for the Playwright driver.
+window.demo.at = (x, y) => {
+  const r = board.el.getBoundingClientRect();
+  const g = geometry(r.width, Math.min(devicePixelRatio || 1, 3));
+  return { x: r.left + g.pad + x * g.cell, y: r.top + g.pad + y * g.cell, cell: g.cell };
+};
+
+function applyPage() {
+  document.body.style.background = THEMES[board.el.dataset.theme].pageBg;
+  $('screen').style.background = THEMES[board.el.dataset.theme].pageBg;
+}
+
+const sel = $('theme');
+for (const id of THEME_IDS) {
+  const o = document.createElement('option');
+  o.value = id; o.textContent = `${THEMES[id].name} (${id})`;
+  sel.append(o);
+}
+sel.value = theme;
+sel.onchange = () => { board.setTheme(sel.value); applyPage(); };
+document.querySelectorAll('input[name=input]').forEach((r) => {
+  if (r.value === (q.get('input') || 'double')) r.checked = true;
+  r.onchange = () => board.setInput(r.value);
+});
+$('reset').onclick = () => load([]);
+$('mid').onclick = () => load(MID);
+$('winpos').onclick = () => {
+  load(MID);
+  for (const [x, y] of WIN.slice(MID.length)) play(y * N + x, true);
+};
+$('showwin').onclick = () => {
+  const lastIdx = game.moves[game.moves.length - 1];
+  if (lastIdx === undefined) return;
+  const c = game.b[lastIdx];
+  game.b[lastIdx] = 0;
+  const j = judgeMove(game.b, lastIdx % N, (lastIdx / N) | 0, c);
+  game.b[lastIdx] = c;
+  if (j.win) board.showWin(j.line);
+};
+$('flash').onclick = () => board.flashForbidden(3 * N + 13);
+$('marks').onchange = refreshMarks;
+$('lock').onchange = () => board.setLocked($('lock').checked || game.over);
+$('reduce').onchange = () => {
+  if ($('reduce').checked) document.documentElement.dataset.motion = 'reduce';
+  else delete document.documentElement.dataset.motion;
+};
+$('timeout').onclick = () => {
+  const i = board.commitArmed();
+  log(`commitArmed → ${i}`);
+  if (i >= 0) play(i); else toast('TIME OVER');
+};
+$('undo').onclick = () => {
+  if (game.over || !game.moves.length) return;
+  const idx = game.moves.pop();
+  game.color = game.b[idx];
+  game.b[idx] = 0;
+  board.remove(idx);
+  board.setPosition(game.b, game.moves.length ? game.moves[game.moves.length - 1] : -1);
+  setTurnUI();
+};
+
+if (q.get('reduce') === '1') { $('reduce').checked = true; document.documentElement.dataset.motion = 'reduce'; }
+if (q.get('marks') === '1') $('marks').checked = true;
+if (q.get('shot') === '1') document.body.classList.add('shot');
+applyPage();
+const pos = q.get('pos');
+if (pos === 'mid' || pos === 'arm') load(MID);
+else if (pos === 'win') { load(WIN.slice(0, -1)); play(WIN[WIN.length - 1][1] * N + WIN[WIN.length - 1][0], false); }
+else load([]);
+document.body.dataset.ready = '1';
+log('ready');
+</script>
+</body>
+</html>

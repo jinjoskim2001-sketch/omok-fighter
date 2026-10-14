@@ -1,0 +1,535 @@
+/* css/chars/taenggeul.css — 탱글 Taenggeul, the caramel-pudding 씨름 wrestler. Builds on css/fighters.css. */
+
+/* ---------- palette P1 + alt (P2 mirror match: ube pudding with the red 홍샅바) ---------- */
+.ch-taenggeul {
+  --custard: #FFD45E; --custard-sh: #F0B53A;
+  --caramel: #9C4A1A; --caramel-hi: #C9773A;
+  --cherry: #E8304B; --leaf: #5CC15F; --stem: #4F9A3F;
+  --satba: #2D6BFF; --satba-sh: #2050CC; --knot: #5B8CFF;
+  --cheek: #FF9F7A; --mouth: #7A2335; --tongue: #FF7A8A;
+}
+.alt .ch-taenggeul {
+  --custard: #C99BFF; --custard-sh: #A774E8;
+  --satba: #E8304B; --satba-sh: #B81F38; --knot: #FF6B7E;
+  --cheek: #FF8FB8;
+}
+
+.ch-taenggeul .custard { fill: var(--custard); }
+.ch-taenggeul .shade { fill: var(--custard-sh); }
+.ch-taenggeul .line { fill: none; }
+.ch-taenggeul .caramel { fill: var(--caramel); }
+.ch-taenggeul .caramel-hi { fill: none; stroke: var(--caramel-hi); stroke-width: 2.2; stroke-linecap: round; }
+.ch-taenggeul .ln.drip-ln { stroke-width: 2; }
+.ch-taenggeul .gloss { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: .8; }
+.ch-taenggeul .gloss-dot { fill: #fff; opacity: .8; }
+.ch-taenggeul .toe { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; opacity: .7; }
+.ch-taenggeul .fist-ln { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; opacity: .45; }
+.ch-taenggeul .puddle-hi { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; opacity: .7; }
+.ch-taenggeul .satba { fill: var(--satba); }
+.ch-taenggeul .satba-sh { fill: var(--satba-sh); }
+.ch-taenggeul .knot { fill: var(--knot); }
+.ch-taenggeul .knot-ln { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; opacity: .5; }
+.ch-taenggeul .cherry-c { fill: var(--cherry); }
+.ch-taenggeul .leaf { fill: var(--leaf); }
+.ch-taenggeul .leaf-ln { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-linecap: round; opacity: .45; }
+.ch-taenggeul .ln.stem { stroke-width: 3.6; }
+.ch-taenggeul .stem-c { fill: none; stroke: var(--stem); stroke-width: 1.5; stroke-linecap: round; }
+.ch-taenggeul .cheek { fill: var(--cheek); opacity: .75; }
+.ch-taenggeul .mouth { fill: var(--mouth); }
+.ch-taenggeul .tongue { fill: var(--tongue); }
+.ch-taenggeul .hl { fill: #fff; }
+.ch-taenggeul .ln.brow { stroke-width: 3; }
+.ch-taenggeul .ln.happy { stroke-width: 2.8; }
+.ch-taenggeul .ln.squint { stroke-width: 2.8; }
+.ch-taenggeul .ln.thin { stroke-width: 2; }
+.ch-taenggeul .tear { fill: none; stroke: #5EC8FF; stroke-width: 2.4; stroke-linecap: round; }
+/* face B/C/S and the melt puddle are hidden outside their states (also in portraitHTML / figureHTML) */
+.ch-taenggeul .face-b, .ch-taenggeul .face-c, .ch-taenggeul .face-s, .ch-taenggeul .puddle { opacity: 0; }
+
+/* ---------- effects layer (sibling svg: does not spin with the body) ---------- */
+.stage[data-char="taenggeul"] .fx-dust .puff { fill: #FFF4DE; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.stage[data-char="taenggeul"] .fx-dust .puff-ln { fill: none; stroke: #fff; stroke-width: 1.4; stroke-linecap: round; }
+.stage[data-char="taenggeul"] .fx-flip { fill: none; stroke: #fff; stroke-linecap: round; }
+.stage[data-char="taenggeul"] .fx-flip .flip-a { stroke-width: 3.4; }
+.stage[data-char="taenggeul"] .fx-flip .flip-b { stroke-width: 2; opacity: .6; }
+.stage[data-char="taenggeul"] .fx-ring { fill: none; }
+.stage[data-char="taenggeul"] .fx-ring .ring-a { stroke: var(--ink); stroke-width: 3.6; opacity: .5; }
+.stage[data-char="taenggeul"] .fx-ring .ring-b { stroke: #FFF4DE; stroke-width: 1.8; }
+.stage[data-char="taenggeul"] .fx-burst { fill: none; stroke-linecap: round; stroke-width: 3.2; }
+.stage[data-char="taenggeul"] .fx-burst .burst-a { stroke: #FFC83D; }
+.stage[data-char="taenggeul"] .fx-burst .burst-b { stroke: #4F8BFF; }
+.stage[data-char="taenggeul"] .fxc-stem { fill: none; stroke: var(--ink); stroke-width: 3.6; stroke-linecap: round; }
+.stage[data-char="taenggeul"] .fxc-stem-c { fill: none; stroke: #4F9A3F; stroke-width: 1.5; stroke-linecap: round; }
+.stage[data-char="taenggeul"] .fxc-leaf { fill: #5CC15F; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.stage[data-char="taenggeul"] .fxc-cherry { fill: #E8304B; stroke: var(--ink); stroke-width: 2; }
+.stage[data-char="taenggeul"] .fxc-hl { fill: #fff; }
+.stage[data-char="taenggeul"] .seal-bg { fill: #D7263D; stroke: var(--ink); stroke-width: 2.4; }
+.stage[data-char="taenggeul"] .seal-ln { fill: none; stroke: #FFF4DE; stroke-width: 1.2; }
+.stage[data-char="taenggeul"] .seal-txt { fill: #FFF4DE; font: 900 10px system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif; }
+.stage[data-char="taenggeul"] .fx-dizzy { fill: #FFC83D; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
+.stage[data-char="taenggeul"] .fx-dizzy .star { transform-box: view-box; transform-origin: 0 0; }
+
+/* ======================================================================================
+   IDLE — jelly wobble on the composited .rig only (origin = feet, so the base stays planted).
+   FIDGET (JS adds .fidget for 0.8 s every 5-9 s) — cherry boing + a quick satba tug; blink is shared.
+   ====================================================================================== */
+.stage[data-char="taenggeul"][data-state="idle"] .rig { animation: taenggeul-idle 2.4s ease-in-out infinite; }
+@keyframes taenggeul-idle {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) skewX(-1.5deg) scale(1, 1); }
+  25%      { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1.018, .982); }
+  50%      { transform: translate(0%, 0%) rotate(0deg) skewX(1.5deg) scale(1, 1); }
+  75%      { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1.018, .982); }
+}
+.stage[data-char="taenggeul"].fidget .cherry { animation: taenggeul-fidget-cherry .72s ease-out 1; }
+.stage[data-char="taenggeul"].fidget .armL { animation: taenggeul-fidget-armL .72s ease-in-out 1; }
+.stage[data-char="taenggeul"].fidget .armR { animation: taenggeul-fidget-armR .72s ease-in-out 1; }
+@keyframes taenggeul-fidget-cherry {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); }
+  14%  { transform: translate(0px, -2.6px) rotate(-16deg) scale(.92, 1.1); }
+  30%  { transform: translate(0px, 0.8px) rotate(12deg) scale(1.12, .88); }
+  46%  { transform: translate(0px, -0.4px) rotate(-8deg) scale(.97, 1.03); }
+  62%  { transform: translate(0px, 0px) rotate(5deg) scale(1, 1); }
+  80%  { transform: translate(0px, 0px) rotate(-2deg) scale(1, 1); }
+}
+@keyframes taenggeul-fidget-armL { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(-38deg); } 48% { transform: rotate(-30deg); } 62% { transform: rotate(-40deg); } }
+@keyframes taenggeul-fidget-armR { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(38deg); } 48% { transform: rotate(30deg); } 62% { transform: rotate(40deg); } }
+
+/* battle one-shots use the shared rig motion; the cherry just jiggles along */
+.stage[data-char="taenggeul"][data-state="attack"] .cherry { animation: taenggeul-attack-cherry .28s ease-out both; }
+.stage[data-char="taenggeul"][data-state="hit"] .cherry { animation: taenggeul-hit-cherry .22s ease-out both; }
+@keyframes taenggeul-attack-cherry {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); }
+  35% { transform: translate(0px, 0px) rotate(calc(var(--dir, 1) * -18deg)) scale(1, 1); }
+  70% { transform: translate(0px, 0px) rotate(calc(var(--dir, 1) * 8deg)) scale(1, 1); }
+}
+@keyframes taenggeul-hit-cherry {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); }
+  30% { transform: translate(0px, -1.5px) rotate(calc(var(--dir, 1) * 16deg)) scale(.94, 1.08); }
+  65% { transform: translate(0px, 0px) rotate(calc(var(--dir, 1) * -7deg)) scale(1, 1); }
+}
+
+/* ======================================================================================
+   MY TURN (0.6 s): 씨름 ready stomp — lift the left leg out to the side, STOMP (dust puffs, cherry
+   squash, "> <" effort face), jelly settle; then the idle wobble takes over.
+   ====================================================================================== */
+.stage[data-char="taenggeul"][data-state="turn"] .rig {
+  animation: taenggeul-turn .6s linear both, taenggeul-idle 2.4s .6s ease-in-out infinite;
+}
+.stage[data-char="taenggeul"][data-state="turn"] .legL   { animation: taenggeul-turn-legL .6s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="turn"] .legR   { animation: taenggeul-turn-legR .6s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="turn"] .armL   { animation: taenggeul-turn-armL .6s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="turn"] .armR   { animation: taenggeul-turn-armR .6s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="turn"] .cherry { animation: taenggeul-turn-cherry .6s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="turn"] .face-a { animation: taenggeul-turn-face-a .6s step-end both; }
+.stage[data-char="taenggeul"][data-state="turn"] .face-s { animation: taenggeul-turn-face-s .6s step-end both; }
+.stage[data-char="taenggeul"][data-state="turn"] .fx-dust { animation: taenggeul-turn-dust .6s linear both; }
+.stage[data-char="taenggeul"][data-state="turn"] .dustL  { animation: taenggeul-turn-dustL .6s ease-out both; }
+.stage[data-char="taenggeul"][data-state="turn"] .dustR  { animation: taenggeul-turn-dustR .6s ease-out both; }
+@keyframes taenggeul-turn {
+  0%   { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  12%  { transform: translate(0%, 0%) rotate(3deg) skewX(0deg) scale(.95, 1.06); animation-timing-function: ease-in-out; }
+  30%  { transform: translate(1.5%, -2.5%) rotate(6deg) skewX(-2deg) scale(.97, 1.04); animation-timing-function: ease-in; }
+  44%  { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1.15, .85); animation-timing-function: ease-out; }
+  57%  { transform: translate(0%, 0%) rotate(0deg) skewX(2deg) scale(.94, 1.07); animation-timing-function: ease-in-out; }
+  71%  { transform: translate(0%, 0%) rotate(0deg) skewX(-1deg) scale(1.05, .95); animation-timing-function: ease-in-out; }
+  85%  { transform: translate(0%, 0%) rotate(0deg) skewX(.5deg) scale(.985, 1.015); animation-timing-function: ease-in-out; }
+  100% { transform: translate(0%, 0%) rotate(0deg) skewX(-1.5deg) scale(1, 1); }
+}
+@keyframes taenggeul-turn-legL {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  12%  { transform: translate(0px, -2px) rotate(14deg); }
+  30%  { transform: translate(0px, -7px) rotate(44deg); animation-timing-function: ease-in; }
+  44%  { transform: translate(0px, 0px) rotate(6deg); }
+  70%  { transform: translate(0px, 0px) rotate(0deg); }
+}
+@keyframes taenggeul-turn-legR {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  30%  { transform: translate(0px, 0px) rotate(-5deg); }
+  44%  { transform: translate(0px, 0px) rotate(-9deg); }
+  70%  { transform: translate(0px, 0px) rotate(0deg); }
+}
+@keyframes taenggeul-turn-armL {
+  0%, 100% { transform: rotate(0deg); }
+  12%  { transform: rotate(30deg); }
+  30%  { transform: rotate(52deg); animation-timing-function: ease-in; }
+  44%  { transform: rotate(-34deg); }
+  57%  { transform: rotate(-22deg); }
+  72%  { transform: rotate(4deg); }
+}
+@keyframes taenggeul-turn-armR {
+  0%, 100% { transform: rotate(0deg); }
+  12%  { transform: rotate(-22deg); }
+  30%  { transform: rotate(-40deg); animation-timing-function: ease-in; }
+  44%  { transform: rotate(34deg); }
+  57%  { transform: rotate(22deg); }
+  72%  { transform: rotate(-4deg); }
+}
+@keyframes taenggeul-turn-cherry {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); }
+  12%  { transform: translate(0px, -0.5px) rotate(-5deg) scale(.95, 1.06); }
+  30%  { transform: translate(0px, 0px) rotate(-15deg) scale(1, 1); animation-timing-function: ease-in; }
+  44%  { transform: translate(0px, 2.2px) rotate(0deg) scale(1.32, .68); animation-timing-function: ease-out; }
+  57%  { transform: translate(0px, -1px) rotate(11deg) scale(.92, 1.1); }
+  71%  { transform: translate(0px, 0px) rotate(-6deg) scale(1, 1); }
+  85%  { transform: translate(0px, 0px) rotate(3deg) scale(1, 1); }
+}
+@keyframes taenggeul-turn-face-a { 0% { opacity: 1; } 42% { opacity: 0; } 64%, 100% { opacity: 1; } }
+@keyframes taenggeul-turn-face-s { 0% { opacity: 0; } 42% { opacity: 1; } 64%, 100% { opacity: 0; } }
+@keyframes taenggeul-turn-dust { 0%, 43% { opacity: 0; } 46%, 76% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes taenggeul-turn-dustL {
+  0%, 43% { transform: translate(5px, 0px) scale(.35); }
+  100%    { transform: translate(-7px, -3px) scale(1.15); }
+}
+@keyframes taenggeul-turn-dustR {
+  0%, 43% { transform: translate(-5px, 0px) scale(.35); }
+  100%    { transform: translate(7px, -3px) scale(1.15); }
+}
+
+/* ======================================================================================
+   WIN (2.4 s) "뒤집기 → 철퍼덕 → 탱글탱글 → 천하장사" + 1.2 s jelly-sway loop from 2.4 s.
+     0.00 rise · 0.13 STOMP into the 씨름 crouch, grip · 0.42 heave, lean back · 0.56 crouch
+     0.62–0.96 뒤집기 backflip (arc to −30 %, arms/legs tucked, caramel flings at 0.80)
+     1.00 SPLAT (1.42, .58), ring, "> <" · 1.12 rebound stretch: the cherry pops off ·
+     1.25/1.38/1.48 탱글탱글 jiggle · 1.48 cherry plops back · 1.55 crouch ·
+     1.60 HIT: star jump, arms up (만세), face B, 천하장사 seal, flash · 1.93 land · settle.
+   Loop (from 2.4 s): composited jelly sway on the .rig + a small cherry wobble (the only SVG part
+   that keeps animating, to keep repaints tiny).
+   Rig: translate rotate skewX scale about the body centre (60,75); translate keeps the feet on the
+   floor in every grounded keyframe (computed). Parts: arms/legs rotate at shoulder/hip, the cherry
+   (translate rotate scale about its centre) follows a screen-space parabola while airborne.
+   ====================================================================================== */
+.stage[data-char="taenggeul"][data-state="win"] .rig {
+  transform-origin: 50% 62.5%;
+  animation: taenggeul-win 2.4s linear both, taenggeul-loop 1.2s 2.4s ease-in-out infinite;
+}
+.stage[data-char="taenggeul"][data-state="win"] .armL   { animation: taenggeul-win-armL 2.4s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .armR   { animation: taenggeul-win-armR 2.4s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .legL   { animation: taenggeul-win-legL 2.4s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .legR   { animation: taenggeul-win-legR 2.4s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .cherry { animation: taenggeul-win-cherry 2.4s linear both, taenggeul-loop-cherry 1.2s 2.4s ease-in-out infinite; }
+.stage[data-char="taenggeul"][data-state="win"] .face-a { animation: taenggeul-win-face-a 2.4s step-end both; }
+.stage[data-char="taenggeul"][data-state="win"] .face-s { animation: taenggeul-win-face-s 2.4s step-end both; }
+.stage[data-char="taenggeul"][data-state="win"] .face-b { animation: taenggeul-win-face-b 2.4s step-end both; }
+.stage[data-char="taenggeul"][data-state="win"] .fx-flip    { animation: taenggeul-fx-flip 2.4s linear both; }
+.stage[data-char="taenggeul"][data-state="win"] .fx-ring    { animation: taenggeul-fx-ring 2.4s ease-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .fx-burst   { animation: taenggeul-fx-burst 2.4s ease-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .fx-sticker { animation: taenggeul-fx-sticker 2.4s ease-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .flash      { animation: taenggeul-flash 2.4s ease-out both; }
+.stage[data-char="taenggeul"][data-state="win"] .shadow     { animation: taenggeul-shadow 2.4s ease-in-out both; }
+
+@keyframes taenggeul-win {
+  0%      { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  2.92%   { transform: translate(0%, -1.82%) rotate(0deg) skewX(0deg) scale(0.95, 1.06); animation-timing-function: ease-in; }
+  5.42%   { transform: translate(0%, 4.84%) rotate(0deg) skewX(0deg) scale(1.16, 0.84); animation-timing-function: ease-out; }
+  7.92%   { transform: translate(0%, 2.12%) rotate(0deg) skewX(0deg) scale(1.07, 0.93); animation-timing-function: ease-in-out; }
+  10.42%  { transform: translate(0.69%, 3.93%) rotate(0deg) skewX(-1.5deg) scale(1.13, 0.87); animation-timing-function: ease-in-out; }
+  12.92%  { transform: translate(0.7%, 3.34%) rotate(1.5deg) skewX(0deg) scale(1.11, 0.89); animation-timing-function: ease-in-out; }
+  17.5%   { transform: translate(-8.65%, -2.01%) rotate(-10deg) skewX(5deg) scale(0.93, 1.1); animation-timing-function: ease-out; }
+  20.83%  { transform: translate(-6.02%, -0.71%) rotate(-15deg) skewX(-4deg) scale(0.98, 1.04); animation-timing-function: ease-in-out; }
+  23.33%  { transform: translate(-6.59%, 3.82%) rotate(-12deg) skewX(2deg) scale(1.1, 0.9); animation-timing-function: ease-in; }
+  25.83%  { transform: translate(-0.83%, -7.5%) rotate(-40deg) skewX(0deg) scale(0.9, 1.12); animation-timing-function: linear; }
+  29.17%  { transform: translate(-2.5%, -21.67%) rotate(-130deg) skewX(0deg) scale(0.97, 1.03); animation-timing-function: linear; }
+  33.33%  { transform: translate(-3.33%, -30%) rotate(-220deg) skewX(0deg) scale(1, 1); animation-timing-function: linear; }
+  37.5%   { transform: translate(-1.67%, -21.67%) rotate(-310deg) skewX(0deg) scale(0.97, 1.03); animation-timing-function: linear; }
+  40%     { transform: translate(0%, -7.5%) rotate(-352deg) skewX(0deg) scale(0.9, 1.1); animation-timing-function: ease-in; }
+  41.67%  { transform: translate(0%, 12.1%) rotate(-360deg) skewX(0deg) scale(1.4, 0.6); animation-timing-function: ease-out; }
+  46.67%  { transform: translate(0%, -6.65%) rotate(-360deg) skewX(0deg) scale(0.84, 1.22); animation-timing-function: ease-in-out; }
+  52.08%  { transform: translate(-1.9%, 3.02%) rotate(-360deg) skewX(4deg) scale(1.12, 0.9); animation-timing-function: ease-in-out; }
+  57.5%   { transform: translate(1.68%, -1.82%) rotate(-360deg) skewX(-3deg) scale(0.95, 1.06); animation-timing-function: ease-in-out; }
+  61.67%  { transform: translate(-0.77%, 0.91%) rotate(-360deg) skewX(1.5deg) scale(1.04, 0.97); animation-timing-function: ease-in-out; }
+  64.58%  { transform: translate(0%, 3.02%) rotate(-360deg) skewX(0deg) scale(1.1, 0.9); animation-timing-function: ease-out; }
+  66.67%  { transform: translate(0%, -8.33%) rotate(-360deg) skewX(0deg) scale(0.93, 1.09); animation-timing-function: ease-out; }
+  71.67%  { transform: translate(0%, -12.5%) rotate(-360deg) skewX(0deg) scale(1, 1); animation-timing-function: ease-in; }
+  77.5%   { transform: translate(0%, -1.21%) rotate(-360deg) skewX(0deg) scale(0.97, 1.04); animation-timing-function: ease-out; }
+  80.42%  { transform: translate(0%, 3.93%) rotate(-360deg) skewX(0deg) scale(1.13, 0.87); animation-timing-function: ease-out; }
+  85%     { transform: translate(1.1%, -1.21%) rotate(-360deg) skewX(-2deg) scale(0.97, 1.04); animation-timing-function: ease-in-out; }
+  90%     { transform: translate(-0.52%, 0.6%) rotate(-360deg) skewX(1deg) scale(1.02, 0.98); animation-timing-function: ease-in-out; }
+  95%     { transform: translate(0%, -0.15%) rotate(-360deg) skewX(0deg) scale(0.995, 1.005); animation-timing-function: ease-in-out; }
+  100%    { transform: translate(0%, 0%) rotate(-360deg) skewX(0deg) scale(1, 1); }
+}
+@keyframes taenggeul-loop {
+  0%      { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1, 1); }
+  25%     { transform: translate(-1.55%, 0.6%) rotate(0deg) skewX(3deg) scale(1.02, 0.98); }
+  50%     { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1, 1); }
+  75%     { transform: translate(1.55%, 0.6%) rotate(0deg) skewX(-3deg) scale(1.02, 0.98); }
+  100%    { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1, 1); }
+}
+@keyframes taenggeul-win-cherry {
+  0%      { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); animation-timing-function: ease-in-out; }
+  2.92%   { transform: translate(0px, -1px) rotate(0deg) scale(0.94, 1.08); animation-timing-function: ease-in; }
+  5.42%   { transform: translate(0px, 1.9px) rotate(0deg) scale(1.3, 0.72); animation-timing-function: ease-out; }
+  7.92%   { transform: translate(0px, -1.5px) rotate(-9deg) scale(0.94, 1.08); animation-timing-function: ease-in-out; }
+  12.92%  { transform: translate(0px, 0px) rotate(6deg) scale(1, 1); animation-timing-function: ease-in-out; }
+  17.5%   { transform: translate(0px, 0px) rotate(18deg) scale(1, 1); animation-timing-function: ease-in-out; }
+  20.83%  { transform: translate(0px, 0px) rotate(-8deg) scale(1, 1); animation-timing-function: ease-in-out; }
+  23.33%  { transform: translate(0px, 0.7px) rotate(4deg) scale(1.12, 0.9); animation-timing-function: ease-in; }
+  25.83%  { transform: translate(0px, -1.4px) rotate(24deg) scale(0.95, 1.06); animation-timing-function: linear; }
+  33.33%  { transform: translate(0px, -1.5px) rotate(30deg) scale(1, 1); animation-timing-function: linear; }
+  40%     { transform: translate(0px, -1.4px) rotate(12deg) scale(0.95, 1.06); animation-timing-function: ease-in; }
+  41.67%  { transform: translate(0px, 2.4px) rotate(0deg) scale(1.4, 0.64); animation-timing-function: ease-out; }
+  44.17%  { transform: translate(0px, -0.8px) rotate(0deg) scale(0.9, 1.12); animation-timing-function: ease-out; }
+  46.67%  { transform: translate(0px, 0px) rotate(-15deg) scale(0.88, 1.14); animation-timing-function: linear; }
+  48.75%  { transform: translate(4.4px, -19.3px) rotate(-90deg) scale(0.96, 1.04); animation-timing-function: linear; }
+  50.83%  { transform: translate(8.2px, -38.8px) rotate(-160deg) scale(1, 1); animation-timing-function: linear; }
+  52.92%  { transform: translate(8.2px, -47.5px) rotate(-220deg) scale(1, 1); animation-timing-function: linear; }
+  55%     { transform: translate(3px, -37px) rotate(-270deg) scale(1, 1); animation-timing-function: linear; }
+  57.08%  { transform: translate(-3px, -23.5px) rotate(-310deg) scale(1, 1); animation-timing-function: linear; }
+  59.17%  { transform: translate(-1.9px, -14.8px) rotate(-340deg) scale(0.96, 1.04); animation-timing-function: ease-in; }
+  61.67%  { transform: translate(0px, 2.2px) rotate(-360deg) scale(1.34, 0.68); animation-timing-function: ease-out; }
+  64.58%  { transform: translate(0px, -0.8px) rotate(-360deg) scale(0.9, 1.12); animation-timing-function: ease-out; }
+  66.67%  { transform: translate(0px, -1.5px) rotate(-348deg) scale(0.94, 1.07); animation-timing-function: ease-out; }
+  71.67%  { transform: translate(0px, 0px) rotate(-368deg) scale(1, 1); animation-timing-function: ease-in; }
+  77.5%   { transform: translate(0px, -0.3px) rotate(-362deg) scale(0.96, 1.04); animation-timing-function: ease-out; }
+  80.42%  { transform: translate(0px, 1.1px) rotate(-356deg) scale(1.18, 0.84); animation-timing-function: ease-out; }
+  85%     { transform: translate(0px, -0.8px) rotate(-364deg) scale(0.95, 1.05); animation-timing-function: ease-in-out; }
+  90%     { transform: translate(0px, 0px) rotate(-358deg) scale(1, 1); animation-timing-function: ease-in-out; }
+  100%    { transform: translate(0px, 0px) rotate(-360deg) scale(1, 1); }
+}
+@keyframes taenggeul-loop-cherry {
+  0%, 50%, 100% { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); }
+  25% { transform: translate(0px, 0px) rotate(-9deg) scale(1, 1); }
+  75% { transform: translate(0px, 0px) rotate(9deg) scale(1, 1); }
+}
+/* positive rotate swings a hanging limb toward screen-left: armL/legL outward = +, armR/legR outward = − */
+@keyframes taenggeul-win-armL {
+  0%, 100% { transform: rotate(0deg); }
+  2.92%  { transform: rotate(18deg); }
+  5.42%  { transform: rotate(-58deg); }
+  7.92%  { transform: rotate(-48deg); }
+  12.92% { transform: rotate(-56deg); }
+  17.5%  { transform: rotate(128deg); }
+  20.83% { transform: rotate(142deg); }
+  23.33% { transform: rotate(112deg); }
+  25.83% { transform: rotate(50deg); }
+  29.17%, 37.5% { transform: rotate(-42deg); }
+  40%    { transform: rotate(30deg); }
+  41.67% { transform: rotate(66deg); }
+  46.67% { transform: rotate(6deg); }
+  52.08% { transform: rotate(58deg); }
+  57.5%  { transform: rotate(20deg); }
+  61.67% { transform: rotate(40deg); }
+  64.58% { transform: rotate(-8deg); animation-timing-function: cubic-bezier(.2, .9, .3, 1.15); }
+  66.67% { transform: rotate(124deg); }
+  69.17% { transform: rotate(135deg); }
+  71.67% { transform: rotate(126deg); }
+  77.5%  { transform: rotate(120deg); }
+  80.42% { transform: rotate(108deg); }
+  85%    { transform: rotate(128deg); }
+  90%    { transform: rotate(120deg); }
+  95%, 100% { transform: rotate(122deg); }
+}
+@keyframes taenggeul-win-armR {
+  0%, 100% { transform: rotate(0deg); }
+  2.92%  { transform: rotate(-18deg); }
+  5.42%  { transform: rotate(58deg); }
+  7.92%  { transform: rotate(48deg); }
+  12.92% { transform: rotate(56deg); }
+  17.5%  { transform: rotate(-122deg); }
+  20.83% { transform: rotate(-138deg); }
+  23.33% { transform: rotate(-112deg); }
+  25.83% { transform: rotate(-50deg); }
+  29.17%, 37.5% { transform: rotate(42deg); }
+  40%    { transform: rotate(-30deg); }
+  41.67% { transform: rotate(-66deg); }
+  46.67% { transform: rotate(-6deg); }
+  52.08% { transform: rotate(-58deg); }
+  57.5%  { transform: rotate(-20deg); }
+  61.67% { transform: rotate(-40deg); }
+  64.58% { transform: rotate(8deg); animation-timing-function: cubic-bezier(.2, .9, .3, 1.15); }
+  66.67% { transform: rotate(-124deg); }
+  69.17% { transform: rotate(-132deg); }
+  71.67% { transform: rotate(-126deg); }
+  77.5%  { transform: rotate(-120deg); }
+  80.42% { transform: rotate(-108deg); }
+  85%    { transform: rotate(-128deg); }
+  90%    { transform: rotate(-120deg); }
+  95%, 100% { transform: rotate(-122deg); }
+}
+@keyframes taenggeul-win-legL {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  2.92%  { transform: translate(0px, -3px) rotate(20deg); }
+  5.42%  { transform: translate(0px, 0px) rotate(8deg); }
+  12.92% { transform: translate(0px, 0px) rotate(9deg); }
+  17.5%  { transform: translate(0px, 0px) rotate(0deg); }
+  23.33% { transform: translate(0px, 0px) rotate(10deg); }
+  25.83% { transform: translate(0px, -2px) rotate(0deg); }
+  29.17%, 37.5% { transform: translate(0px, -6px) rotate(-18deg); }
+  40%    { transform: translate(0px, 0px) rotate(0deg); }
+  41.67% { transform: translate(0px, -1px) rotate(50deg); }
+  46.67% { transform: translate(0px, 0px) rotate(-4deg); }
+  52.08% { transform: translate(0px, 0px) rotate(12deg); }
+  57.5%  { transform: translate(0px, 0px) rotate(0deg); }
+  64.58% { transform: translate(0px, 0px) rotate(8deg); }
+  66.67% { transform: translate(0px, 0px) rotate(22deg); }
+  71.67% { transform: translate(0px, 0px) rotate(26deg); }
+  77.5%  { transform: translate(0px, 0px) rotate(4deg); }
+  80.42% { transform: translate(0px, 0px) rotate(7deg); }
+  90%    { transform: translate(0px, 0px) rotate(0deg); }
+}
+@keyframes taenggeul-win-legR {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  5.42%  { transform: translate(0px, 0px) rotate(-8deg); }
+  12.92% { transform: translate(0px, 0px) rotate(-9deg); }
+  17.5%  { transform: translate(0px, 0px) rotate(0deg); }
+  23.33% { transform: translate(0px, 0px) rotate(-10deg); }
+  25.83% { transform: translate(0px, -2px) rotate(0deg); }
+  29.17%, 37.5% { transform: translate(0px, -6px) rotate(18deg); }
+  40%    { transform: translate(0px, 0px) rotate(0deg); }
+  41.67% { transform: translate(0px, -1px) rotate(-50deg); }
+  46.67% { transform: translate(0px, 0px) rotate(4deg); }
+  52.08% { transform: translate(0px, 0px) rotate(-12deg); }
+  57.5%  { transform: translate(0px, 0px) rotate(0deg); }
+  64.58% { transform: translate(0px, 0px) rotate(-8deg); }
+  66.67% { transform: translate(0px, 0px) rotate(-22deg); }
+  71.67% { transform: translate(0px, 0px) rotate(-26deg); }
+  77.5%  { transform: translate(0px, 0px) rotate(-4deg); }
+  80.42% { transform: translate(0px, 0px) rotate(-7deg); }
+  90%    { transform: translate(0px, 0px) rotate(0deg); }
+}
+/* faces: A until the splat, S ("> <") through the jiggle, B (victory) from the HIT */
+@keyframes taenggeul-win-face-a { 0% { opacity: 1; } 41.67%, 100% { opacity: 0; } }
+@keyframes taenggeul-win-face-s { 0% { opacity: 0; } 41.67% { opacity: 1; } 66.5%, 100% { opacity: 0; } }
+@keyframes taenggeul-win-face-b { 0% { opacity: 0; } 66.5%, 100% { opacity: 1; } }
+@keyframes taenggeul-fx-flip {
+  0%, 25.5% { opacity: 0; transform: rotate(0deg); }
+  27%    { opacity: 1; transform: rotate(-40deg); }
+  38.5%  { opacity: .9; transform: rotate(-290deg); }
+  40.5%, 100% { opacity: 0; transform: rotate(-330deg); }
+}
+@keyframes taenggeul-fx-ring {
+  0%, 41.6% { opacity: 0; transform: scale(.3, .3); }
+  41.67% { opacity: 1; transform: scale(.35, .35); }
+  47%    { opacity: .9; transform: scale(.85, .85); }
+  54%, 100% { opacity: 0; transform: scale(1.15, 1.15); }
+}
+@keyframes taenggeul-fx-burst {
+  0%, 66.4% { opacity: 0; transform: scale(.55); }
+  66.5%  { opacity: 1; transform: scale(.7); }
+  76%, 100% { opacity: 0; transform: scale(1.25); }
+}
+/* the red '천하장사' seal stamps in on the HIT and stays (it is the title) */
+@keyframes taenggeul-fx-sticker {
+  0%, 66.4% { opacity: 0; transform: rotate(-30deg) scale(0); }
+  66.5%  { opacity: 1; transform: rotate(-26deg) scale(.3); }
+  69.5%  { opacity: 1; transform: rotate(-4deg) scale(1.35); animation-timing-function: ease-in-out; }
+  72.5%  { opacity: 1; transform: rotate(-10deg) scale(.92); }
+  75%, 100% { opacity: 1; transform: rotate(-8deg) scale(1); }
+}
+@keyframes taenggeul-flash {
+  0%, 66.4% { opacity: 0; transform: scale(.4); }
+  67.2%  { opacity: .9; transform: scale(.9); }
+  74%, 100% { opacity: 0; transform: scale(1.3); }
+}
+@keyframes taenggeul-shadow {
+  0%, 100% { opacity: 1; transform: scale(1, 1); }
+  5.42%  { opacity: 1; transform: scale(1.16, 1); }
+  12.92% { opacity: 1; transform: scale(1.12, 1); }
+  17.5%  { opacity: 1; transform: scale(.94, 1); }
+  23.33% { opacity: 1; transform: scale(1.1, 1); }
+  25.83% { opacity: .8; transform: scale(.85, .9); }
+  33.33% { opacity: .45; transform: scale(.55, .7); }
+  40%    { opacity: .8; transform: scale(.85, .9); }
+  41.67% { opacity: 1; transform: scale(1.45, 1.15); }
+  46.67% { opacity: 1; transform: scale(.88, 1); }
+  52.08% { opacity: 1; transform: scale(1.1, 1); }
+  57.5%  { opacity: 1; transform: scale(.97, 1); }
+  64.58% { opacity: 1; transform: scale(1.08, 1); }
+  66.67% { opacity: .8; transform: scale(.86, .9); }
+  71.67% { opacity: .65; transform: scale(.76, .85); }
+  77.5%  { opacity: 1; transform: scale(.98, 1); }
+  80.42% { opacity: 1; transform: scale(1.12, 1); }
+  90%    { opacity: 1; transform: scale(1, 1); }
+}
+
+/* ======================================================================================
+   LOSE (1.0 s + loop): "조금… 녹았어…" — a startled jolt, then the pudding melts down from the feet
+   (scale 1.22 × .63), arms droop, feet splay, the drips run longer, a custard puddle spreads and the
+   cherry (an fx copy, so it is not squashed by the melting rig) rolls off the top and plops on the floor.
+   ====================================================================================== */
+.stage[data-char="taenggeul"][data-state="lose"] .rig {
+  animation: taenggeul-lose 1s linear both, taenggeul-lose-loop 2.6s 1s ease-in-out infinite;
+}
+.stage[data-char="taenggeul"][data-state="lose"] .cherry { opacity: 0; }
+.stage[data-char="taenggeul"][data-state="lose"] .fx-cherry { opacity: 1; animation: taenggeul-lose-cherry 1s linear both; }
+.stage[data-char="taenggeul"][data-state="lose"] .armL   { animation: taenggeul-lose-armL 1s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="lose"] .armR   { animation: taenggeul-lose-armR 1s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="lose"] .legL   { animation: taenggeul-lose-legL 1s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="lose"] .legR   { animation: taenggeul-lose-legR 1s ease-in-out both; }
+.stage[data-char="taenggeul"][data-state="lose"] .drips  { animation: taenggeul-lose-drips 1s ease-in both; }
+.stage[data-char="taenggeul"][data-state="lose"] .puddle { animation: taenggeul-lose-puddle 1s ease-out both; }
+.stage[data-char="taenggeul"][data-state="lose"] .shadow { animation: taenggeul-lose-shadow 1s ease-out both; }
+/* the shared dizzy stars orbit just above the melted top, so they fade in once the melt has landed */
+.stage[data-char="taenggeul"][data-state="lose"] .fx-dizzy { animation: taenggeul-lose-dizzy 1s linear both; }
+@keyframes taenggeul-lose {
+  0%   { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  10%  { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(.94, 1.08); animation-timing-function: ease-in-out; }
+  24%  { transform: translate(0%, 0%) rotate(0deg) skewX(-2deg) scale(1.03, .94); animation-timing-function: ease-in; }
+  40%  { transform: translate(0%, 0%) rotate(0deg) skewX(2deg) scale(1.12, .8); animation-timing-function: ease-in; }
+  56%  { transform: translate(0%, 0%) rotate(0deg) skewX(-1.5deg) scale(1.28, .58); animation-timing-function: ease-out; }
+  70%  { transform: translate(0%, 0%) rotate(0deg) skewX(1deg) scale(1.19, .67); animation-timing-function: ease-in-out; }
+  84%  { transform: translate(0%, 0%) rotate(0deg) skewX(-.5deg) scale(1.24, .61); animation-timing-function: ease-in-out; }
+  100% { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1.22, .63); }
+}
+@keyframes taenggeul-lose-loop {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1.22, .63); }
+  25%      { transform: translate(0%, 0%) rotate(0deg) skewX(1.2deg) scale(1.235, .615); }
+  50%      { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1.25, .6); }
+  75%      { transform: translate(0%, 0%) rotate(0deg) skewX(-1.2deg) scale(1.235, .615); }
+}
+/* fx cherry (centre 60,30): rides the top, rolls over the right edge, falls, bounces, rests */
+@keyframes taenggeul-lose-cherry {
+  0%   { transform: translate(0px, 0px) rotate(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  10%  { transform: translate(0px, -9px) rotate(-10deg) scale(.94, 1.06); animation-timing-function: ease-in; }
+  24%  { transform: translate(6px, 4.5px) rotate(50deg) scale(1.08, .92); animation-timing-function: linear; }
+  34%  { transform: translate(23.4px, 17.7px) rotate(202deg) scale(1, 1); animation-timing-function: ease-in; }
+  56%  { transform: translate(40px, 75.9px) rotate(330deg) scale(1.25, .75); animation-timing-function: ease-out; }
+  64%  { transform: translate(44px, 67px) rotate(380deg) scale(.95, 1.05); animation-timing-function: ease-in; }
+  72%  { transform: translate(46px, 75px) rotate(400deg) scale(1.12, .88); animation-timing-function: ease-out; }
+  82%  { transform: translate(47.5px, 74.2px) rotate(412deg) scale(1, 1); animation-timing-function: ease-out; }
+  100% { transform: translate(48px, 74.2px) rotate(416deg) scale(1, 1); }
+}
+@keyframes taenggeul-lose-armL { 0% { transform: rotate(0deg); } 10% { transform: rotate(24deg); } 40% { transform: rotate(-8deg); } 60% { transform: rotate(-26deg); } 100% { transform: rotate(-22deg); } }
+@keyframes taenggeul-lose-armR { 0% { transform: rotate(0deg); } 10% { transform: rotate(-24deg); } 40% { transform: rotate(8deg); } 60% { transform: rotate(26deg); } 100% { transform: rotate(22deg); } }
+@keyframes taenggeul-lose-legL {
+  0%   { transform: translate(0px, 0px) rotate(0deg); }
+  10%  { transform: translate(0px, 0px) rotate(-4deg); }
+  56%  { transform: translate(0px, -2px) rotate(46deg); }
+  100% { transform: translate(0px, -1px) rotate(40deg); }
+}
+@keyframes taenggeul-lose-legR {
+  0%   { transform: translate(0px, 0px) rotate(0deg); }
+  10%  { transform: translate(0px, 0px) rotate(4deg); }
+  56%  { transform: translate(0px, -2px) rotate(-46deg); }
+  100% { transform: translate(0px, -1px) rotate(-40deg); }
+}
+@keyframes taenggeul-lose-drips { 0%, 20% { transform: scale(1, 1); } 100% { transform: scale(1, 1.7); } }
+@keyframes taenggeul-lose-puddle {
+  0%, 22% { opacity: 0; transform: scale(.3, .5); }
+  50%  { opacity: 1; transform: scale(.9, 1); }
+  70%  { opacity: 1; transform: scale(1.06, 1); }
+  100% { opacity: 1; transform: scale(1, 1); }
+}
+@keyframes taenggeul-lose-dizzy { 0%, 52% { opacity: 0; } 66%, 100% { opacity: 1; } }
+@keyframes taenggeul-lose-shadow { 0% { transform: scale(1, 1); } 56% { transform: scale(1.4, 1.1); } 100% { transform: scale(1.32, 1.05); } }
+
+/* ======================================================================================
+   REDUCED MOTION (<html data-motion="reduce">): shared rules stop every animation and show face B on
+   win. Static poses: 만세 arms + the seal for the victory; the melted pudding + fallen cherry for lose.
+   ====================================================================================== */
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="win"] .armL { transform: rotate(122deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="win"] .armR { transform: rotate(-122deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="win"] .legL { transform: translate(0px, 0px) rotate(6deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="win"] .legR { transform: translate(0px, 0px) rotate(-6deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="win"] .face-s { opacity: 0; }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="win"] .fx-sticker {
+  opacity: 1; transform: rotate(-8deg) scale(1); animation: fighter-rm-fade .4s ease-out both !important;
+}
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .rig { transform: translate(0%, 0%) rotate(0deg) skewX(0deg) scale(1.22, .63); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .fx-cherry { opacity: 1; transform: translate(48px, 74.2px) rotate(416deg) scale(1, 1); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .armL { transform: rotate(-22deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .armR { transform: rotate(22deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .legL { transform: translate(0px, -1px) rotate(40deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .legR { transform: translate(0px, -1px) rotate(-40deg); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .drips { transform: scale(1, 1.7); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .puddle { opacity: 1; transform: scale(1, 1); }
+[data-motion="reduce"] .stage[data-char="taenggeul"][data-state="lose"] .shadow { transform: scale(1.32, 1.05); }
